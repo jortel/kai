@@ -101,52 +101,87 @@ def insert_method_parameter(session, method_id, name, param_type):
     session.add(MethodParameter(method_id=method_id, name=name, type=param_type))
 
 
-def parse(path, parser, session):
+def build(path, language, parser, session):
     with open(path, "r") as file:
         code = file.read()
     tree = parser.parse(bytes(code, "utf8"))
+    root = tree.root_node
+    # QUERY
+    for q in (
+        """
+       (class_declaration
+         (modifiers
+           (annotation
+             name: (identifier) @annotation_name
+             arguments: (annotation_argument_list) @annotation_args
+             (#eq? @annotation_name "MessageDriven"))))
+        """,
+        """
+        (annotation
+          name: (identifier) @annotation_name
+          (#eq? @annotation_name "MessageDriven"))
+        """,
+    ):
+        tq = tree_sitter.Query(language, q)
+        captured = tq.captures(root)
+        for capture in captured:
+            node, name = capture
+            print(
+                f"Matched ({name}) code:{node.text.decode('utf8')} @ {node.start_byte}/{node.end_byte}"
+            )
 
-    def traverse(node):
-        match node.type:
-            case "package_declaration":
-                print("(%s) found.", node.type)
-                for n in node.children:
-                    traverse(n)
-            case "import_declaration":
-                print("(%s) found. %s" % (node.type, node.text.decode("utf8")))
-                for n in node.children:
-                    traverse(n)
-            case "class_declaration":
-                print("(%s) found. %s" % (node.type, node.text.decode("utf8")))
-                for n in node.children:
-                    traverse(n)
-            case "method_declaration":
-                print("(%s) found. %s" % (node.type, node.text.decode("utf8")))
-                for n in node.children:
-                    traverse(n)
-            case "formal_parameters":
-                print("(%s) found. %s" % (node.type, node.text.decode("utf8")))
-                for n in node.children:
-                    traverse(n)
-            case _:
-                print("(%s) found. %s" % (node.type, node.text.decode("utf8")[:20]))
-                for n in node.children:
-                    traverse(n)
+    # TRAVERSE
+    print("query done.\n\n")
+    traverse(root, session)
+    print("build done.")
 
-    traverse(tree.root_node)
-    print("parsed")
+
+def traverse(node, session):
+    match node.type:
+        case "package_declaration":
+            print("(%s) found.", node.type)
+            for n in node.children:
+                traverse(n, session)
+        case "import_declaration":
+            print("(%s) found. %s" % (node.type, node.text.decode("utf8")))
+            for n in node.children:
+                traverse(n, session)
+        case "class_declaration":
+            print("(%s) found. %s" % (node.type, node.text.decode("utf8")))
+            for n in node.children:
+                traverse(n, session)
+        case "method_declaration":
+            print("(%s) found. %s" % (node.type, node.text.decode("utf8")))
+            node.walk()
+            for n in node.children:
+                traverse(n, session)
+        case "annotation":
+            print("(%s) found. %s" % (node.type, node.text.decode("utf8")))
+            node.walk()
+            for n in node.children:
+                traverse(n, session)
+        case "formal_parameters":
+            print("(%s) found. %s" % (node.type, node.text.decode("utf8")))
+            for n in node.children:
+                traverse(n, session)
+        case _:
+            print("(%s) found. %s" % (node.type, node.text.decode("utf8")[:60]))
+            for n in node.children:
+                traverse(n, session)
 
 
 def main():
     Base.metadata.create_all(engine)
     java = tree_sitter_java.language()
-    parser = tree_sitter.Parser(tree_sitter.Language(java))
+    java = tree_sitter.Language(java)
+    parser = tree_sitter.Parser(java)
+
     with Session(engine) as session:
         for root, _, files in os.walk("."):
             for file in files:
                 if file.endswith(".java"):
                     path = os.path.join(root, file)
-                    parse(path, parser, session)
+                    build(path, java, parser, session)
         session.commit()
 
     print("Java source code parsed and data inserted into the database.")

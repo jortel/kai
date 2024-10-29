@@ -1,21 +1,112 @@
-import json
 import pprint
 import re
-from typing import List
 
-import patch
+import tree_sitter
+import tree_sitter_java
+import yaml
 from langchain import PromptTemplate
 from langchain.chains import LLMChain
 from langchain_aws import ChatBedrock
 
 pp = pprint.PrettyPrinter(indent=2)
 
-# anthropic.claude-3-5-sonnet-20240620-v1:0
-# meta.llama3-70b-instruct-v1:0
+m_id = "meta.llama3-70b-instruct-v1:0"
+m_id = "anthropic.claude-3-5-sonnet-20240620-v1:0"
 llm = ChatBedrock(
-    model_id="anthropic.claude-3-5-sonnet-20240620-v1:0",
+    model_id=m_id,
     model_kwargs={"temperature": 0.1},
 )
+
+issues = """
+### Issue 1
+Issue to fix: "Replace the `javax.ejb` import statement with `jakarta.ejb` "
+Line number: 3
+### Issue 2
+Issue to fix: "Replace the `javax.ejb` import statement with `jakarta.ejb` "
+Line number: 4
+### Issue 3
+Issue to fix: "Replace the `javax.inject` import statement with `jakarta.inject` "
+Line number: 5
+### Issue 4
+Issue to fix: "Replace the `javax.jms` import statement with `jakarta.jms` "
+Line number: 6
+### Issue 5
+Issue to fix: "Replace the `javax.jms` import statement with `jakarta.jms` "
+Line number: 7
+### Issue 6
+Issue to fix: "Replace the `javax.jms` import statement with `jakarta.jms` "
+Line number: 8
+### Issue 7
+Issue to fix: "Replace the `javax.jms` import statement with `jakarta.jms` "
+Line number: 9
+### Issue 8
+Issue to fix: "Enterprise Java Beans (EJBs) are not supported in Quarkus. CDI must be used.
+ Please replace the `@MessageDriven` annotation with a CDI scope annotation like `@ApplicationScoped`."
+Line number: 14
+### Issue 9
+Issue to fix: "The `destinationLookup` property can be migrated by annotating a message handler method (potentially `onMessage`) with the
+ `org.eclipse.microprofile.reactive.messaging.Incoming` annotation, indicating the name of the queue as a value:
+
+ Before:
+ ```
+ @MessageDriven(name = "HelloWorldQueueMDB", activationConfig = 
+ public class MessageListenerImpl implements MessageListener 
+ }
+ ```
+
+ After:
+ ```
+ public class MessageListenerImpl implements MessageListener 
+ }
+ ```"
+Line number: 15
+### Issue 10
+Issue to fix: "The `destinationLookup` property can be migrated by annotating a message handler method (potentially `onMessage`) with the
+ `org.eclipse.microprofile.reactive.messaging.Incoming` annotation, indicating the name of the queue as a value:
+
+ Before:
+ ```
+ @MessageDriven(name = "HelloWorldQueueMDB", activationConfig = 
+ public class MessageListenerImpl implements MessageListener 
+ }
+ ```
+
+ After:
+ ```
+ public class MessageListenerImpl implements MessageListener 
+ }
+ ```"
+Line number: 16
+### Issue 11
+Issue to fix: "The `destinationLookup` property can be migrated by annotating a message handler method (potentially `onMessage`) with the
+ `org.eclipse.microprofile.reactive.messaging.Incoming` annotation, indicating the name of the queue as a value:
+
+ Before:
+ ```
+ @MessageDriven(name = "HelloWorldQueueMDB", activationConfig = 
+ public class MessageListenerImpl implements MessageListener 
+ }
+ ```
+
+ After:
+ ```
+ public class MessageListenerImpl implements MessageListener 
+ }
+ ```"
+Line number: 17
+### Issue 12
+Issue to fix: "References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents."
+Line number: 6
+### Issue 13
+Issue to fix: "References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents."
+Line number: 7
+### Issue 14
+Issue to fix: "References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents."
+Line number: 8
+### Issue 15
+Issue to fix: "References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents."
+Line number: 9
+"""
 
 plan1 = """
 I will provided a set of issues to be addressed in java code.
@@ -256,95 +347,7 @@ SELECT code FROM Method WHERE name = 'onMessage';
 ```
 
 ## Issues
-
-### Issue 1
-Issue to fix: "Replace the `javax.ejb` import statement with `jakarta.ejb` "
-Line number: 3
-### Issue 2
-Issue to fix: "Replace the `javax.ejb` import statement with `jakarta.ejb` "
-Line number: 4
-### Issue 3
-Issue to fix: "Replace the `javax.inject` import statement with `jakarta.inject` "
-Line number: 5
-### Issue 4
-Issue to fix: "Replace the `javax.jms` import statement with `jakarta.jms` "
-Line number: 6
-### Issue 5
-Issue to fix: "Replace the `javax.jms` import statement with `jakarta.jms` "
-Line number: 7
-### Issue 6
-Issue to fix: "Replace the `javax.jms` import statement with `jakarta.jms` "
-Line number: 8
-### Issue 7
-Issue to fix: "Replace the `javax.jms` import statement with `jakarta.jms` "
-Line number: 9
-### Issue 8
-Issue to fix: "Enterprise Java Beans (EJBs) are not supported in Quarkus. CDI must be used.
- Please replace the `@MessageDriven` annotation with a CDI scope annotation like `@ApplicationScoped`."
-Line number: 14
-### Issue 9
-Issue to fix: "The `destinationLookup` property can be migrated by annotating a message handler method (potentially `onMessage`) with the
- `org.eclipse.microprofile.reactive.messaging.Incoming` annotation, indicating the name of the queue as a value:
- 
- Before:
- ```
- @MessageDriven(name = "HelloWorldQueueMDB", activationConfig = 
- public class MessageListenerImpl implements MessageListener 
- }}
- ```
- 
- After:
- ```
- public class MessageListenerImpl implements MessageListener 
- }}
- ```"
-Line number: 15
-### Issue 10
-Issue to fix: "The `destinationLookup` property can be migrated by annotating a message handler method (potentially `onMessage`) with the
- `org.eclipse.microprofile.reactive.messaging.Incoming` annotation, indicating the name of the queue as a value:
- 
- Before:
- ```
- @MessageDriven(name = "HelloWorldQueueMDB", activationConfig = 
- public class MessageListenerImpl implements MessageListener 
- }}
- ```
- 
- After:
- ```
- public class MessageListenerImpl implements MessageListener 
- }}
- ```"
-Line number: 16
-### Issue 11
-Issue to fix: "The `destinationLookup` property can be migrated by annotating a message handler method (potentially `onMessage`) with the
- `org.eclipse.microprofile.reactive.messaging.Incoming` annotation, indicating the name of the queue as a value:
- 
- Before:
- ```
- @MessageDriven(name = "HelloWorldQueueMDB", activationConfig = 
- public class MessageListenerImpl implements MessageListener 
- }}
- ```
- 
- After:
- ```
- public class MessageListenerImpl implements MessageListener 
- }}
- ```"
-Line number: 17
-### Issue 12
-Issue to fix: "References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents."
-Line number: 6
-### Issue 13
-Issue to fix: "References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents."
-Line number: 7
-### Issue 14
-Issue to fix: "References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents."
-Line number: 8
-### Issue 15
-Issue to fix: "References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents."
-Line number: 9
+{issues}
 
 ## Output
 Return a list of steps in markdown grouped by issue number. Steps to fetch code MUST be expressed using SQL.
@@ -352,15 +355,99 @@ Each step should include your rational for fetching the code and how the code sh
 make the change. Do not include any INSERT, UPDATE or DELETE SQL statements.
 """
 
+plan5 = """
+You are an expert java programming assistant.
+
+I will provided a set of issues to be addressed in java code.
+For each issue, you will provide a tree-sitter query used to fetch the nodes with
+text needed to fix the issue.
+```
+
+## Issues
+{issues}
+
+## Output
+Return a list of steps in markdown grouped by issue number. 
+Steps to fetch code MUST be expressed using tree-sitter queries.
+Each step should include your rationale for fetching the code and how the code should be changed.
+Identify tree-sitter query markdown using `tq`. 
+Example:
+```tq
+```
+"""
+
 
 def plan():
-    prompt = PromptTemplate(template=plan4)
+    prompt = PromptTemplate(template=plan5)
     chain = LLMChain(llm=llm, prompt=prompt)
-    reply = chain.invoke({})
-
+    reply = chain.invoke({"issues": issues})
     output = reply["text"]
     print("OUTPUT:\n%s" % output)
 
 
+class Step(object):
+    def __init__(self):
+        self.issues = []
+        self.queries = []
+
+
+class Architect(object):
+    fetch_prompt = """
+    You are an expert java programming assistant.
+
+    I will provided a set of issues to be addressed in java code.
+    For each issue, you will provide a tree-sitter query used to fetch the nodes with
+    text needed to fix the issue.
+    ```
+
+    ## Issues
+    {issues}
+
+    ## Output
+    Return a list of steps in YAML grouped by issue number. 
+    Steps to fetch code MUST be expressed using tree-sitter queries.
+    The YAML schema for each step is:
+    - issues (array of int): List of issue numbers.
+    - queries (object): List of queries.
+      - query (multiline string): tree-sitter query.
+      - reason (string): Rationale for the query.
+    """
+
+    def __init__(self, path):
+        java = tree_sitter_java.language()
+        self.language = tree_sitter.Language(java)
+        self.parser = tree_sitter.Parser(self.language)
+        with open(path, "r") as file:
+            content = file.read()
+        tree = self.parser.parse(bytes(content, "utf8"))
+        self.root = tree.root_node
+
+    def query(self, q):
+        tq = tree_sitter.Query(self.language, q)
+        captured = tq.captures(self.root)
+        for capture in captured:
+            node, name = capture
+            print(
+                f"Matched ({name}) code:{node.text.decode('utf8')} @ {node.start_byte}/{node.end_byte}"
+            )
+
+    def fetch(self):
+        prompt = PromptTemplate(template=self.fetch_prompt)
+        chain = LLMChain(llm=llm, prompt=prompt)
+        reply = chain.invoke({"issues": issues})
+        output = reply["text"]
+        print("OUTPUT:\n%s" % output)
+
+        pattern = r"(```yaml)(.+)(```)"
+        matched = re.findall(pattern, output, re.DOTALL)
+        for m in matched:
+            content = m[1]
+            steps = yaml.safe_load(content)
+
+    def patch(self):
+        pass
+
+
 if __name__ == "__main__":
-    plan()
+    architect = Architect(path="./planner/mdb.java")
+    architect.fetch()
