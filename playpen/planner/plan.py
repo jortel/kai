@@ -1,5 +1,6 @@
 import pprint
 import re
+import time
 
 import tree_sitter
 import tree_sitter_java
@@ -376,6 +377,70 @@ Example:
 ```
 """
 
+plan6 = """
+You are an expert java programming assistant.
+
+I will provided a set of issues to be addressed in java code.
+For each issue, you will provide a tree-sitter query used to fetch the nodes with
+text needed to fix the issue.
+When generating tree-sitter queries ensure that:
+- Nodes and their labels use direct nesting and are organized by indentation,
+  without colons or extra symbols.
+- Attributes, like @label, are placed directly next to node types.
+- Any #match? expressions or other predicates are used directly below the labeled node, 
+  with appropriate regex or conditions.
+- Do not use language specific node types.
+Recommended nodes to fetch:
+- Import statements (block).
+- Class: annotation, signature, with body.
+- Method: annotation, signature, with body.
+- Class declaration: - annotations, no body.
+- Method declaration: - annotations, signature, no body.
+
+## Issues
+{issues}
+
+## Output
+Return a list of steps in YAML grouped by issue number. 
+Steps to fetch code MUST be expressed using tree-sitter queries.
+The YAML schema for each step is:
+- issues (array of int): List of issue numbers.
+- queries (object): List of queries.
+  - tq (string): tree-sitter query.
+  - reason (string): Rationale for the query.
+Ensure YAML has markdown syntax highlighting.
+"""
+
+plan7 = """
+You are an expert java programming assistant.
+
+I will provided a set of issues to be addressed in java code.
+For each issue, you will fetch code snips needed to fix the issue using the provided actions.
+
+## Actions:
+- fetch: fetch a code snip for the code construct kind.
+  parameters:
+    kind (string): kind of code construct. Supported values:
+      - imports - The import statements (block).
+      - class   - The entire class declaration including the body.
+      - method - The entire method declaration including the body.
+      - class-declaration - A class declaration without the body.
+      - method-declaration - A method declaration without the body
+    name (string): The (OPTIONAL) name of the named kinds such as classes and methods.
+    match (string): The (OPTIONAL) matching criteria. This is a regex used to match.
+    reason (string): The rationale for the action.
+
+## Issues
+{issues}
+
+## Output
+Return a list of actions in YAML grouped by issue number. 
+The YAML schema for each action is:
+- issues (array of int): List of associated issue numbers.
+- actions (array): List of actions.
+Ensure YAML has markdown syntax highlighting.
+"""
+
 
 def plan():
     prompt = PromptTemplate(template=plan5)
@@ -385,35 +450,37 @@ def plan():
     print("OUTPUT:\n%s" % output)
 
 
-class Step(object):
+class Fragment(object):
     def __init__(self):
         self.issues = []
-        self.queries = []
+        self.reason = ""
+        self.begin = 0
+        self.end = 0
+        self.code = ""
 
 
-class Architect(object):
-    fetch_prompt = """
-    You are an expert java programming assistant.
+class Action(object):
+    @classmethod
+    def new(cls, name) -> "Action":
+        return Fetch()
 
-    I will provided a set of issues to be addressed in java code.
-    For each issue, you will provide a tree-sitter query used to fetch the nodes with
-    text needed to fix the issue.
-    ```
+    def __call__(self, ast) -> Fragment:
+        pass
 
-    ## Issues
-    {issues}
 
-    ## Output
-    Return a list of steps in YAML grouped by issue number. 
-    Steps to fetch code MUST be expressed using tree-sitter queries.
-    The YAML schema for each step is:
-    - issues (array of int): List of issue numbers.
-    - queries (object): List of queries.
-      - query (multiline string): tree-sitter query.
-      - reason (string): Rationale for the query.
-    """
+class Fetch(Action):
+    def __init__(self, d):
+        self.__dict__.update(d)
 
-    def __init__(self, path):
+    def __call__(self, ast) -> Fragment:
+        fetched = Fragment()
+        return fetched
+
+
+class Planner(object):
+
+    def __init__(self, path, prompt):
+        self.prompt = prompt
         java = tree_sitter_java.language()
         self.language = tree_sitter.Language(java)
         self.parser = tree_sitter.Parser(self.language)
@@ -423,31 +490,38 @@ class Architect(object):
         self.root = tree.root_node
 
     def query(self, q):
+        print(f"\n\nFind:{q})\n\n")
         tq = tree_sitter.Query(self.language, q)
         captured = tq.captures(self.root)
         for capture in captured:
             node, name = capture
             print(
-                f"Matched ({name}) code:{node.text.decode('utf8')} @ {node.start_byte}/{node.end_byte}"
+                f"\n\nMatched ({name}) code:{node.text.decode('utf8')} @ {node.start_byte}/{node.end_byte}"
             )
 
     def fetch(self):
-        prompt = PromptTemplate(template=self.fetch_prompt)
+        mark = time.time()
+        prompt = PromptTemplate(template=self.prompt)
         chain = LLMChain(llm=llm, prompt=prompt)
         reply = chain.invoke({"issues": issues})
         output = reply["text"]
-        print("OUTPUT:\n%s" % output)
+        duration = time.time() - mark
+        print(f"\n\nLLM (duration={duration:.2f}s)\n{output}\n\n")
+
+        return  # FIX ME
 
         pattern = r"(```yaml)(.+)(```)"
         matched = re.findall(pattern, output, re.DOTALL)
         for m in matched:
             content = m[1]
-            steps = yaml.safe_load(content)
+            actions = yaml.safe_load(content)
+            for action in actions:
+                print(f"\n\nLLM: :\n{action}\n\n")
 
     def patch(self):
         pass
 
 
 if __name__ == "__main__":
-    architect = Architect(path="./planner/mdb.java")
-    architect.fetch()
+    planner = Planner(path="./planner/mdb.java", prompt=plan7)
+    planner.fetch()
