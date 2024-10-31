@@ -143,8 +143,7 @@ Ensure YAML has markdown syntax highlighting.
 
 
 class Fragment(object):
-    def __init__(self, kind: str, begin: int, end: int, code: str):
-        self.kind = kind
+    def __init__(self, begin: int, end: int, code: str):
         self.begin = begin
         self.end = end
         self.code = code
@@ -153,7 +152,11 @@ class Fragment(object):
 
     def __repr__(self):
         return (
-            f"\n\nFRAGMENT({self.kind}): code:\n{self.code} @ {self.begin}/{self.end}"
+            f"\n\nFRAGMENT({self.kind}):\n"
+            f"issues: {self.issues}\n"
+            f"reason: {self.reason}\n"
+            f"code:\n{self.code} "
+            f"@ {self.begin}/{self.end}"
         )
 
     def __str__(self):
@@ -202,7 +205,6 @@ class Fetch(Action):
                     node, name = capture
                     text = node.text.decode("utf8")
                     fragment = Fragment(
-                        kind=self.kind,
                         begin=node.start_byte,
                         end=node.end_byte,
                         code=text,
@@ -223,7 +225,6 @@ class Fetch(Action):
                     end = body.start_byte - node.start_byte
                     text = node.text[:end]
                     fragment = Fragment(
-                        kind=self.kind,
                         begin=node.start_byte,
                         end=body.start_byte,
                         code=text,
@@ -238,13 +239,15 @@ class Fetch(Action):
                     node, name = capture
                     text = node.text.decode("utf8")
                     fragment = Fragment(
-                        kind=self.kind,
                         begin=node.start_byte,
                         end=node.end_byte,
                         code=text,
                     )
             case _:
                 print("kind {self.kind} not supported.")
+        if fragment:
+            fragment.kind = self.kind
+            fragment.reason = self.reason
         return fragment
 
 
@@ -285,11 +288,12 @@ class Planner(object):
             document = m[1]
             actions = yaml.safe_load(document)
             for d in actions:
-                for action in d["actions"]:
-                    print(f"\n\nACTION: :\n{action}\n\n")
-                    action = Action.new(action)
+                for item in d["actions"]:
+                    print(f"\n\nACTION: :\n{item}\n\n")
+                    action = Action.new(item)
                     fragment = action(self.language, self.root)
                     if fragment:
+                        fragment.issues = d["issues"]
                         print(fragment)
 
     def patch(self):
