@@ -1,16 +1,29 @@
+import io
 import pprint
 import re
 import time
 
 import tree_sitter
 import tree_sitter_java
-import yaml
 from langchain import PromptTemplate
 from langchain.chains import LLMChain
 from langchain_aws import ChatBedrock
+from ruamel.yaml import YAML
 from tree_sitter_languages.core import Language
 
 pp = pprint.PrettyPrinter(indent=2)
+
+
+def str_representer(dumper, data):
+    if len(data.splitlines()) > 1:  # check for multiline string
+        return dumper.represent_scalar("tag:yaml.org,2002:str", data, style="|")
+    return dumper.represent_scalar("tag:yaml.org,2002:str", data)
+
+
+yaml = YAML()
+yaml.default_flow_style = False
+yaml.indent(sequence=4, offset=2)
+yaml.representer.add_representer(str, str_representer)
 
 m_id = "meta.llama3-70b-instruct-v1:0"
 m_id = "anthropic.claude-3-5-sonnet-20240620-v1:0"
@@ -111,7 +124,7 @@ Issue to fix: "References to JavaEE/JakartaEE JMS elements should be removed and
 Line number: 9
 """
 
-plan = """
+fetch = """
 You are an expert java programming assistant.
 
 I will provided a set of issues to be addressed in java code.
@@ -141,14 +154,50 @@ The YAML schema for each action is:
 Ensure YAML has markdown syntax highlighting.
 """
 
+patch = """
+You are an expert java programming assistant.
+
+I will provided a set of issues to be addressed in java code.
+You will fix the issues in the provided code fragments (of java code).
+After all of the issues have been fixed, output the fixed code fragments.
+
+## Fragments:
+```yaml
+{fragments}
+```
+
+## Issues
+{issues}
+
+## Output
+Return the fixed fragments in YAML.
+Ensure YAML has markdown syntax highlighting.
+Make sure to copy the input fragment begin, end, reason and issues fields
+to the output objects.
+"""
+
 
 class Fragment(object):
-    def __init__(self, begin: int, end: int, code: str):
+    def __init__(self, d: dict = None, begin: int = 0, end: int = 0, code: str = ""):
+        self.kind = ""
         self.begin = begin
         self.end = end
         self.code = code
-        self.issues = []
+        self.issues = set()
         self.reason = ""
+        if d:
+            self.update(d)
+            return
+
+    def dict(self) -> str:
+        d = {}
+        d.update(self.__dict__)
+        d["issues"] = list(self.issues)
+        return d
+
+    def update(self, d):
+        self.__dict__.update(d)
+        self.issues = set(self.issues)
 
     def __repr__(self):
         return (
@@ -193,22 +242,25 @@ class Fetch(Action):
         fragment = None
         match self.kind:
             case Kind.IMPORT:
-                if not self.match:
-                    self.match = ".+"
                 q = f"""
-                ((import_declaration)
-                    @constant (#match? @constant "{self.match}"))
+                ((import_declaration) @constant)
                 """
                 tq = tree_sitter.Query(language, q)
                 captured = tq.captures(root)
+                begin = 0
+                end = 0
+                statements = []
                 for capture in captured:
                     node, name = capture
                     text = node.text.decode("utf8")
-                    fragment = Fragment(
-                        begin=node.start_byte,
-                        end=node.end_byte,
-                        code=text,
-                    )
+                    statements.append(text)
+                    begin = node.start_byte
+                    end = node.end_byte
+                fragment = Fragment(
+                    begin=begin,
+                    end=end,
+                    code="\n".join(statements),
+                )
             case Kind.CLASS_DECLARATION:
                 q = f"""
                 ((class_declaration) @constant)
@@ -224,6 +276,7 @@ class Fetch(Action):
                             break
                     end = body.start_byte - node.start_byte
                     text = node.text[:end]
+                    text = text.decode("utf-8")
                     fragment = Fragment(
                         begin=node.start_byte,
                         end=body.start_byte,
@@ -253,8 +306,7 @@ class Fetch(Action):
 
 class Planner(object):
 
-    def __init__(self, path, prompt):
-        self.prompt = prompt
+    def __init__(self, path):
         java = tree_sitter_java.language()
         self.language = tree_sitter.Language(java)
         self.parser = tree_sitter.Parser(self.language)
@@ -275,29 +327,68 @@ class Planner(object):
 
     def fetch(self):
         mark = time.time()
-        prompt = PromptTemplate(template=self.prompt)
+        prompt = PromptTemplate(template=fetch)
         chain = LLMChain(llm=llm, prompt=prompt)
         reply = chain.invoke({"issues": issues})
         output = reply["text"]
         duration = time.time() - mark
         print(f"\n\nLLM (duration={duration:.2f}s)\n{output}\n\n")
 
+        fragments = []
         pattern = r"(```yaml)(.+)(```)"
         matched = re.findall(pattern, output, re.DOTALL)
         for m in matched:
             document = m[1]
-            actions = yaml.safe_load(document)
+            actions = yaml.load(io.StringIO(document))
             for d in actions:
                 for item in d["actions"]:
                     print(f"\n\nACTION: :\n{item}\n\n")
                     action = Action.new(item)
                     fragment = action(self.language, self.root)
                     if fragment:
-                        fragment.issues = d["issues"]
+                        fragment.issues.update(set(d["issues"]))
+                        fragments.append(fragment)
                         print(fragment)
 
-    def patch(self):
-        pass
+        collated = {}
+        for fragment in fragments:
+            key = hash(fragment.code)
+            if key in collated:
+                collated[key].issues.update(fragment.issues)
+            else:
+                collated[key] = fragment
+        fragments = list(collated.values())
+        return fragments
+
+    def patch(self, fragments):
+        dicts = []
+        for f in fragments:
+            dicts.append(f.dict())
+        stream = io.StringIO()
+        yaml.dump(dicts, stream)
+        fragments = stream.getvalue()
+        mark = time.time()
+        prompt = PromptTemplate(template=patch)
+        chain = LLMChain(llm=llm, prompt=prompt)
+        reply = chain.invoke({"issues": issues, "fragments": fragments})
+        output = reply["text"]
+        duration = time.time() - mark
+        print(f"\n\nLLM (duration={duration:.2f}s)\n{output}\n\n")
+
+        fragments = []
+        pattern = r"(```yaml)(.+)(```)"
+        matched = re.findall(pattern, output, re.DOTALL)
+        for m in matched:
+            document = m[1]
+            patched = yaml.load(io.StringIO(document))
+            for d in patched:
+                fragment = Fragment(d=d)
+                fragments.append(fragment)
+                print(fragment)
+
+    def plan(self):
+        fragments = self.fetch()
+        self.patch(fragments)
 
 
 def query():
@@ -318,5 +409,5 @@ def query():
 
 
 if __name__ == "__main__":
-    planner = Planner(path="./mdb.java", prompt=plan)
-    planner.fetch()
+    planner = Planner(path="./mdb.java")
+    planner.plan()
