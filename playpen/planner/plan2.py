@@ -19,6 +19,7 @@ llm = ChatBedrock(
     model_kwargs={"temperature": 0.1},
 )
 
+
 issues = """
 ### Issue 1
 Issue to fix: "Replace the `javax.ejb` import statement with `jakarta.ejb` "
@@ -110,7 +111,7 @@ Issue to fix: "References to JavaEE/JakartaEE JMS elements should be removed and
 Line number: 9
 """
 
-plan7 = """
+plan = """
 You are an expert java programming assistant.
 
 I will provided a set of issues to be addressed in java code.
@@ -313,5 +314,5 @@ def query():
 
 
 if __name__ == "__main__":
-    planner = Planner(path="./mdb.java", prompt=plan7)
+    planner = Planner(path="./mdb.java", prompt=plan)
     planner.fetch()
