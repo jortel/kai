@@ -124,7 +124,7 @@ Issue to fix: "References to JavaEE/JakartaEE JMS elements should be removed and
 Line number: 9
 """
 
-fetch = """
+fetch_prompt = """
 You are an expert java programming assistant.
 
 I will provided a set of issues to be addressed in java code.
@@ -154,30 +154,30 @@ The YAML schema for each action is:
 Ensure YAML has markdown syntax highlighting.
 """
 
-patch = """
+patch_prompt = """
 You are an expert java programming assistant.
 
 I will provided a set of issues to be addressed in java code.
-You will fix the issues in the provided code fragments (of java code).
-After all of the issues have been fixed, output the fixed code fragments.
+You will fix the issues in the provided code Patchs (of java code).
+After all of the issues have been fixed, output the fixed code Patchs.
 
 ## Fragments:
 ```yaml
-{fragments}
+{patches}
 ```
 
 ## Issues
 {issues}
 
 ## Output
-Return the fixed fragments in YAML.
+Return the fixed Patchs in YAML.
 Ensure YAML has markdown syntax highlighting.
-Make sure to copy the input fragment begin, end, reason and issues fields
+Make sure to copy the input Patch begin, end, reason and issues fields
 to the output objects.
 """
 
 
-class Fragment(object):
+class Patch(object):
     def __init__(self, d: dict = None, begin: int = 0, end: int = 0, code: str = ""):
         self.kind = ""
         self.begin = begin
@@ -201,7 +201,7 @@ class Fragment(object):
 
     def __repr__(self):
         return (
-            f"\n\nFRAGMENT({self.kind}):\n"
+            f"\n\nPatch({self.kind}):\n"
             f"issues: {self.issues}\n"
             f"reason: {self.reason}\n"
             f"code:\n{self.code} "
@@ -226,7 +226,7 @@ class Action(object):
         if "fetch" in d:
             return Fetch(d["fetch"])
 
-    def __call__(self, language, root) -> Fragment:
+    def __call__(self, language, root) -> Patch:
         pass
 
 
@@ -238,8 +238,8 @@ class Fetch(Action):
         self.reason = ""
         self.__dict__.update(d)
 
-    def __call__(self, language: Language, root) -> Fragment:
-        fragment = None
+    def __call__(self, language: Language, root) -> Patch:
+        patch = None
         match self.kind:
             case Kind.IMPORT:
                 q = f"""
@@ -256,7 +256,7 @@ class Fetch(Action):
                     statements.append(text)
                     begin = node.start_byte
                     end = node.end_byte
-                fragment = Fragment(
+                patch = Patch(
                     begin=begin,
                     end=end,
                     code="\n".join(statements),
@@ -277,7 +277,7 @@ class Fetch(Action):
                     end = body.start_byte - node.start_byte
                     text = node.text[:end]
                     text = text.decode("utf-8")
-                    fragment = Fragment(
+                    patch = Patch(
                         begin=node.start_byte,
                         end=body.start_byte,
                         code=text,
@@ -291,17 +291,17 @@ class Fetch(Action):
                 for capture in captured:
                     node, name = capture
                     text = node.text.decode("utf8")
-                    fragment = Fragment(
+                    patch = Patch(
                         begin=node.start_byte,
                         end=node.end_byte,
                         code=text,
                     )
             case _:
                 print("kind {self.kind} not supported.")
-        if fragment:
-            fragment.kind = self.kind
-            fragment.reason = self.reason
-        return fragment
+        if patch:
+            patch.kind = self.kind
+            patch.reason = self.reason
+        return patch
 
 
 class Planner(object):
@@ -315,26 +315,16 @@ class Planner(object):
         tree = self.parser.parse(bytes(content, "utf8"))
         self.root = tree.root_node
 
-    def query(self, q):
-        print(f"\n\nFind:{q})\n\n")
-        tq = tree_sitter.Query(self.language, q)
-        captured = tq.captures(self.root)
-        for capture in captured:
-            node, name = capture
-            print(
-                f"\n\nMatched ({name}) code:{node.text.decode('utf8')} @ {node.start_byte}/{node.end_byte}"
-            )
-
     def fetch(self):
         mark = time.time()
-        prompt = PromptTemplate(template=fetch)
+        prompt = PromptTemplate(template=fetch_prompt)
         chain = LLMChain(llm=llm, prompt=prompt)
         reply = chain.invoke({"issues": issues})
         output = reply["text"]
         duration = time.time() - mark
         print(f"\n\nLLM (duration={duration:.2f}s)\n{output}\n\n")
 
-        fragments = []
+        patches = []
         pattern = r"(```yaml)(.+)(```)"
         matched = re.findall(pattern, output, re.DOTALL)
         for m in matched:
@@ -344,68 +334,56 @@ class Planner(object):
                 for item in d["actions"]:
                     print(f"\n\nACTION: :\n{item}\n\n")
                     action = Action.new(item)
-                    fragment = action(self.language, self.root)
-                    if fragment:
-                        fragment.issues.update(set(d["issues"]))
-                        fragments.append(fragment)
-                        print(fragment)
+                    patch = action(self.language, self.root)
+                    if patch:
+                        patch.issues.update(set(d["issues"]))
+                        patches.append(patch)
+                        print(patch)
 
         collated = {}
-        for fragment in fragments:
-            key = hash(fragment.code)
+        for p in patches:
+            key = hash(p.code)
             if key in collated:
-                collated[key].issues.update(fragment.issues)
+                collated[key].issues.update(p.issues)
             else:
-                collated[key] = fragment
-        fragments = list(collated.values())
-        return fragments
+                collated[key] = p
+        patches = list(collated.values())
+        return patches
 
-    def patch(self, fragments):
+    def patch(self, patches):
         dicts = []
-        for f in fragments:
-            dicts.append(f.dict())
+        for p in patches:
+            dicts.append(p.dict())
         stream = io.StringIO()
         yaml.dump(dicts, stream)
-        fragments = stream.getvalue()
+        patches = stream.getvalue()
         mark = time.time()
-        prompt = PromptTemplate(template=patch)
+        prompt = PromptTemplate(template=patch_prompt)
         chain = LLMChain(llm=llm, prompt=prompt)
-        reply = chain.invoke({"issues": issues, "fragments": fragments})
+        reply = chain.invoke({"issues": issues, "patches": patches})
         output = reply["text"]
         duration = time.time() - mark
         print(f"\n\nLLM (duration={duration:.2f}s)\n{output}\n\n")
 
-        fragments = []
+        patches = []
         pattern = r"(```yaml)(.+)(```)"
         matched = re.findall(pattern, output, re.DOTALL)
         for m in matched:
             document = m[1]
             patched = yaml.load(io.StringIO(document))
             for d in patched:
-                fragment = Fragment(d=d)
-                fragments.append(fragment)
-                print(fragment)
+                patch = Patch(d=d)
+                patches.append(patch)
+                print(patch)
+        return patches
+
+    def apply(self, patches):
+        pass
 
     def plan(self):
-        fragments = self.fetch()
-        self.patch(fragments)
-
-
-def query():
-    while True:
-        print("> ")
-        lines = []
-        while True:
-            line = input()
-            if line:
-                lines.append(line)
-            else:
-                break
-        try:
-            q = "\n".join(lines)
-            planner.query(q)
-        except Exception as e:
-            print(e)
+        patches = self.fetch()
+        patches = self.patch(patches)
+        self.apply(patches)
 
 
 if __name__ == "__main__":
