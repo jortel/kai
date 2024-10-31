@@ -381,9 +381,14 @@ class Planner(object):
         pass
 
     def plan(self):
+        print("PLAN")
+        print("\n*************  FETCH CODE ****************")
         patches = self.fetch()
+        print("\n*************  PATCH CODE ****************")
         patches = self.patch(patches)
+        print("\n*************  APPLY PATCHES ****************")
         self.apply(patches)
+        print("\nDONE")
 
 
 if __name__ == "__main__":
