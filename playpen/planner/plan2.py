@@ -210,8 +210,9 @@ class Patch(object):
             f"path: {self.path}\n"
             f"issues: {self.issues}\n"
             f"reason: {self.reason}\n"
+            f"begin: {self.begin}\n"
+            f"end: {self.end}\n"
             f"code:\n{self.code} "
-            f"@ {self.begin}/{self.end}"
         )
 
     def __str__(self):
