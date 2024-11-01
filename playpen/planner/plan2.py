@@ -2,6 +2,7 @@ import io
 import pprint
 import re
 import time
+from typing import List
 
 import tree_sitter
 import tree_sitter_java
@@ -134,14 +135,16 @@ For each issue, you will fetch code snips needed to fix the issue using the prov
 - fetch: fetch a code snip for the code construct kind.
   parameters:
     kind (string): kind of code construct. Supported values:
-      - import - The import statements (block).
-      - class   - The entire class declaration including the body.
-      - method - The entire method declaration including the body.
-      - class-declaration - A class declaration without the body.
-      - method-declaration - A method declaration without the body
-    name (string): The (OPTIONAL) name of the named kinds such as classes and methods.
-    match (string): The (OPTIONAL) matching criteria. This is a regex used to match.
-    reason (string): The rationale for the action.
+     - import -  The import statements (block).
+     - class   - The class declaration. This includes annotations and (optional) body.
+     - method -  The method declaration. This includes annotations, signature and (optional) body.
+    body (boolean): Include the construct body.
+                    For classes, this should only be true when the body needs to be included to
+                    remove attributes or methods. For methods, this should only be true when the 
+                    parameters needs to be changed.
+    name (string): The optional name of the named kinds such as classes and methods.
+    match (string): The optional matching criteria. This is a regex used to match.
+    reason (string): The rationale for the fetching the code.
 
 ## Issues
 {issues}
@@ -158,8 +161,8 @@ patch_prompt = """
 You are an expert java programming assistant.
 
 I will provided a set of issues to be addressed in java code.
-You will fix the issues in the provided code Patchs (of java code).
-After all of the issues have been fixed, output the fixed code Patchs.
+You will fix the issues in the provided code fragments (of java code).
+After all of the issues have been fixed, output the fixed code fragments.
 
 ## Fragments:
 ```yaml
@@ -170,9 +173,9 @@ After all of the issues have been fixed, output the fixed code Patchs.
 {issues}
 
 ## Output
-Return the fixed Patchs in YAML.
+Return the fixed patches in YAML.
 Ensure YAML has markdown syntax highlighting.
-Make sure to copy the input Patch begin, end, reason and issues fields
+Make sure to copy the input fragment begin, end, reason and issues fields
 to the output objects.
 """
 
@@ -215,9 +218,7 @@ class Patch(object):
 class Kind(object):
     IMPORT = "import"
     CLASS = "class"
-    CLASS_DECLARATION = f"{CLASS}-declaration"
     METHOD = "method"
-    METHOD_DECLARATION = f"{METHOD}-declaration"
 
 
 class Action(object):
@@ -226,18 +227,19 @@ class Action(object):
         if "fetch" in d:
             return Fetch(d["fetch"])
 
-    def __call__(self, language, root) -> Patch:
-        pass
-
-
-class Fetch(Action):
     def __init__(self, d):
         self.kind = ""
+        self.body = False
         self.name = ""
         self.match = ""
         self.reason = ""
         self.__dict__.update(d)
 
+    def __call__(self, language: Language, root) -> Patch:
+        pass
+
+
+class Fetch(Action):
     def __call__(self, language: Language, root) -> Patch:
         patch = None
         match self.kind:
@@ -261,7 +263,7 @@ class Fetch(Action):
                     end=end,
                     code="\n".join(statements),
                 )
-            case Kind.CLASS_DECLARATION:
+            case Kind.CLASS:
                 q = f"""
                 ((class_declaration) @constant)
                 """
@@ -269,17 +271,21 @@ class Fetch(Action):
                 captured = tq.captures(root)
                 for capture in captured:
                     node, name = capture
-                    body = None
-                    for child in node.children:
-                        if child.type == "class_body":
-                            body = child
-                            break
-                    end = body.start_byte - node.start_byte
-                    text = node.text[:end]
+                    begin = node.start_byte
+                    end = node.end_byte
+                    text = node.text
+                    if not self.body:
+                        body = None
+                        for child in node.children:
+                            if child.type == "class_body":
+                                body = child
+                                break
+                        end = body.start_byte - node.start_byte
+                        text = text[:end]
                     text = text.decode("utf-8")
                     patch = Patch(
-                        begin=node.start_byte,
-                        end=body.start_byte,
+                        begin=begin,
+                        end=end,
                         code=text,
                     )
             case Kind.METHOD:
@@ -290,10 +296,21 @@ class Fetch(Action):
                 captured = tq.captures(root)
                 for capture in captured:
                     node, name = capture
-                    text = node.text.decode("utf8")
+                    begin = node.start_byte
+                    end = node.end_byte
+                    text = node.text
+                    if not self.body:
+                        body = None
+                        for child in node.children:
+                            if child.type == "block":
+                                body = child
+                                break
+                        end = body.start_byte - node.start_byte
+                        text = text[:end]
+                    text = text.decode("utf-8")
                     patch = Patch(
-                        begin=node.start_byte,
-                        end=node.end_byte,
+                        begin=begin,
+                        end=end,
                         code=text,
                     )
             case _:
@@ -315,7 +332,10 @@ class Planner(object):
         tree = self.parser.parse(bytes(content, "utf8"))
         self.root = tree.root_node
 
-    def fetch(self):
+    def predict(self) -> List[Patch]:
+        pass
+
+    def fetch(self) -> List[Patch]:
         mark = time.time()
         prompt = PromptTemplate(template=fetch_prompt)
         chain = LLMChain(llm=llm, prompt=prompt)
@@ -350,7 +370,7 @@ class Planner(object):
         patches = list(collated.values())
         return patches
 
-    def patch(self, patches):
+    def patch(self, patches: List[Patch]) -> List[Patch]:
         dicts = []
         for p in patches:
             dicts.append(p.dict())
@@ -377,14 +397,15 @@ class Planner(object):
                 print(patch)
         return patches
 
-    def apply(self, patches):
+    def apply(self, patches: List[Patch]):
         pass
 
     def plan(self):
-        print("PLAN")
-        print("\n*************  FETCH CODE ****************")
+        print("\n*************  PREDICT PATCHES ****************")
+        patches = self.predict()
+        print("\n*************  FETCH PATCHES ****************")
         patches = self.fetch()
-        print("\n*************  PATCH CODE ****************")
+        print("\n*************  FIX ISSUES IN PATCHES ****************")
         patches = self.patch(patches)
         print("\n*************  APPLY PATCHES ****************")
         self.apply(patches)
