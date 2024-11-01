@@ -259,7 +259,6 @@ class Fetch(Action):
                 captured = tq.captures(root)
                 begin = 0
                 end = 0
-                content = ""
                 for capture in captured:
                     node, name = capture
                     if begin == 0:
