@@ -185,6 +185,7 @@ to the output objects.
 class Patch(object):
     def __init__(self, d: dict = None, begin: int = 0, end: int = 0, code: str = ""):
         self.kind = ""
+        self.path = ""
         self.begin = begin
         self.end = end
         self.code = code
@@ -192,7 +193,6 @@ class Patch(object):
         self.reason = ""
         if d:
             self.update(d)
-            return
 
     def dict(self) -> str:
         d = {}
@@ -207,6 +207,7 @@ class Patch(object):
     def __repr__(self):
         return (
             f"\n\nPatch({self.kind}):\n"
+            f"path: {self.path}\n"
             f"issues: {self.issues}\n"
             f"reason: {self.reason}\n"
             f"code:\n{self.code} "
@@ -231,11 +232,12 @@ class Kind(object):
 
 class Action(object):
     @classmethod
-    def new(cls, d) -> "Action":
+    def new(cls, d: dict, path: str) -> "Action":
         if "fetch" in d:
-            return Fetch(d["fetch"])
+            return Fetch(d["fetch"], path)
 
-    def __init__(self, d):
+    def __init__(self, d: dict, path: str):
+        self.path = path
         self.kind = ""
         self.body = False
         self.name = ""
@@ -259,18 +261,19 @@ class Fetch(Action):
                 captured = tq.captures(root)
                 begin = 0
                 end = 0
-                statements = []
+                content = ""
                 for capture in captured:
                     node, name = capture
-                    text = node.text.decode("utf8")
-                    statements.append(text)
                     if begin == 0:
                         begin = node.start_byte
                     end = node.end_byte
+                with open(self.path, "r") as file:
+                    file.seek(begin)
+                    content = file.read()
                 patch = Patch(
                     begin=begin,
                     end=end,
-                    code="\n".join(statements),
+                    code=content,
                 )
             case Kind.CLASS:
                 q = f"""
@@ -359,9 +362,10 @@ class Planner(object):
             for d in actions:
                 for item in d["actions"]:
                     print(f"\n\nACTION: :\n{item}\n\n")
-                    action = Action.new(item)
+                    action = Action.new(item, self.path)
                     patch = action(self.language, self.root)
                     if patch:
+                        patch.path = self.path
                         patch.issues.update(set(d["issues"]))
                         patches.append(patch)
                         print(patch)
