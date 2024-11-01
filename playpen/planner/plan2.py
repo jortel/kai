@@ -269,7 +269,7 @@ class Fetch(Action):
                     end = node.end_byte
                 with open(self.path, "r") as file:
                     file.seek(begin)
-                    content = file.read()
+                    content = file.read(end - begin)
                 patch = Patch(
                     begin=begin,
                     end=end,
@@ -291,7 +291,7 @@ class Fetch(Action):
                             if child.type == "class_body":
                                 end = child.start_byte
                                 break
-                        text = text[:end]
+                        text = text[: end - begin]
                     text = text.decode("utf-8")
                     patch = Patch(
                         begin=begin,
@@ -314,7 +314,7 @@ class Fetch(Action):
                             if child.type == "block":
                                 end = child.start_byte
                                 break
-                        text = text[:end]
+                        text = text[: end - begin]
                     text = text.decode("utf-8")
                     patch = Patch(
                         begin=begin,
@@ -431,6 +431,7 @@ class Planner(object):
                     file.write(p)
 
     def plan(self):
+        mark = time.time()
         print("\n*************  PREDICT PATCHES ****************")
         patches = self.predict()
         print("\n*************  FETCH PATCHES ****************")
@@ -439,7 +440,8 @@ class Planner(object):
         patches = self.patch(patches)
         print("\n*************  APPLY PATCHES ****************")
         self.apply(patches)
-        print("\nDONE")
+        duration = time.time() - mark
+        print(f"\nDONE (duration={duration:.2f}s)\n")
 
 
 if __name__ == "__main__":
