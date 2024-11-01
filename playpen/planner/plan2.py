@@ -29,10 +29,7 @@ yaml.representer.add_representer(str, str_representer)
 
 m_id = "meta.llama3-70b-instruct-v1:0"
 m_id = "anthropic.claude-3-5-sonnet-20240620-v1:0"
-llm = ChatBedrock(
-    model_id=m_id,
-    model_kwargs={"temperature": 0.1},
-)
+llm = ChatBedrock(model_id=m_id, model_kwargs={"temperature": 0.1})
 
 
 issues = """
@@ -346,13 +343,7 @@ class Planner(object):
         pass
 
     def fetch(self) -> List[Patch]:
-        mark = time.time()
-        prompt = PromptTemplate(template=fetch_prompt)
-        chain = LLMChain(llm=llm, prompt=prompt)
-        reply = chain.invoke({"issues": issues})
-        output = reply["text"]
-        duration = time.time() - mark
-        print(f"\n\nLLM (duration={duration:.2f}s)\n{output}\n\n")
+        output = self.send(name="fetch", template=fetch_prompt, issues=issues)
 
         patches = []
         pattern = r"(```yaml)(.+)(```)"
@@ -388,13 +379,10 @@ class Planner(object):
         stream = io.StringIO()
         yaml.dump(dicts, stream)
         patches = stream.getvalue()
-        mark = time.time()
-        prompt = PromptTemplate(template=patch_prompt)
-        chain = LLMChain(llm=llm, prompt=prompt)
-        reply = chain.invoke({"issues": issues, "patches": patches})
-        output = reply["text"]
-        duration = time.time() - mark
-        print(f"\n\nLLM (duration={duration:.2f}s)\n{output}\n\n")
+
+        output = self.send(
+            name="patch", template=patch_prompt, issues=issues, patches=patches
+        )
 
         patches = []
         pattern = r"(```yaml)(.+)(```)"
@@ -430,6 +418,21 @@ class Planner(object):
             with open(self.path, "w") as file:
                 for p in part:
                     file.write(p)
+
+    def send(self, name: str, template: str, **params) -> str:
+        mark = time.time()
+        prompt = PromptTemplate(template=template)
+        chain = LLMChain(llm=llm, prompt=prompt)
+        reply = chain.invoke(params)
+        output = reply["text"]
+        duration = time.time() - mark
+        print(f"\n\nLLM (duration={duration:.2f}s)\n{output}\n\n")
+        sent = template.format(**params)
+        with open(name + ".prompt", "w") as file:
+            file.write(sent)
+        with open(name + ".replied", "w") as file:
+            file.write(output)
+        return output
 
     def plan(self):
         mark = time.time()
