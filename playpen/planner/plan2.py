@@ -1,6 +1,7 @@
 import io
 import pprint
 import re
+import shutil
 import time
 from typing import List
 
@@ -139,12 +140,13 @@ For each issue, you will fetch code snips needed to fix the issue using the prov
      - class   - The class declaration. This includes annotations and (optional) body.
      - method -  The method declaration. This includes annotations, signature and (optional) body.
     body (boolean): Include the construct body.
-                    For classes, this should only be true when the body needs to be included to
-                    remove attributes or methods. For methods, this should only be true when the 
-                    parameters needs to be changed.
     name (string): The optional name of the named kinds such as classes and methods.
     match (string): The optional matching criteria. This is a regex used to match.
-    reason (string): The rationale for the fetching the code.
+    reason (string): The rationale for the fetching the code.  When body: true, explain why
+                     the body was needed.
+
+Be precise when fetching code fragments. A class body must not be included (body: true) unless
+absolutely necessary. Fetching individual methods must be considered first.
 
 ## Issues
 {issues}
@@ -214,6 +216,12 @@ class Patch(object):
     def __str__(self):
         return repr(self)
 
+    def __lt__(self, other):
+        return self.begin < other.begin
+
+    def __eq__(self, other):
+        return self.begin == other.begin
+
 
 class Kind(object):
     IMPORT = "import"
@@ -256,7 +264,8 @@ class Fetch(Action):
                     node, name = capture
                     text = node.text.decode("utf8")
                     statements.append(text)
-                    begin = node.start_byte
+                    if begin == 0:
+                        begin = node.start_byte
                     end = node.end_byte
                 patch = Patch(
                     begin=begin,
@@ -275,12 +284,10 @@ class Fetch(Action):
                     end = node.end_byte
                     text = node.text
                     if not self.body:
-                        body = None
                         for child in node.children:
                             if child.type == "class_body":
-                                body = child
+                                end = child.start_byte
                                 break
-                        end = body.start_byte - node.start_byte
                         text = text[:end]
                     text = text.decode("utf-8")
                     patch = Patch(
@@ -300,12 +307,10 @@ class Fetch(Action):
                     end = node.end_byte
                     text = node.text
                     if not self.body:
-                        body = None
                         for child in node.children:
                             if child.type == "block":
-                                body = child
+                                end = child.start_byte
                                 break
-                        end = body.start_byte - node.start_byte
                         text = text[:end]
                     text = text.decode("utf-8")
                     patch = Patch(
@@ -324,6 +329,7 @@ class Fetch(Action):
 class Planner(object):
 
     def __init__(self, path):
+        self.path = path
         java = tree_sitter_java.language()
         self.language = tree_sitter.Language(java)
         self.parser = tree_sitter.Parser(self.language)
@@ -398,7 +404,27 @@ class Planner(object):
         return patches
 
     def apply(self, patches: List[Patch]):
-        pass
+        patches = sorted(patches, reverse=True)
+        for patch in patches:
+            print(f"\nAPPLY: {patch}")
+            n = patch.end - patch.begin
+            with open(self.path, "r+") as file:
+                # DEBUG
+                file.seek(patch.begin)
+                content = file.read(patch.end - patch.begin)
+                print(f"\nREPLACE: >>>{content}<<<")
+                file.seek(0)
+                # DEBUG
+
+                part = [
+                    file.read(patch.begin),
+                    patch.code,
+                ]
+                file.seek(patch.end)
+                part.append(file.read())
+            with open(self.path, "w") as file:
+                for p in part:
+                    file.write(p)
 
     def plan(self):
         print("\n*************  PREDICT PATCHES ****************")
@@ -413,5 +439,8 @@ class Planner(object):
 
 
 if __name__ == "__main__":
-    planner = Planner(path="./mdb.java")
+    _in = "./mdb.java"
+    _out = _in + ".patched"
+    shutil.copy(_in, _out)
+    planner = Planner(path=_out)
     planner.plan()
