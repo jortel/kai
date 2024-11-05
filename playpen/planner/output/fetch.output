@@ -1,0 +1,37 @@
+Based on the provided issues and guidelines, I'll generate the consolidated JSON actions to fetch the relevant code fragments needed to fix the issues.
+
+## Issue: 1-7
+```json
+{
+  "action": "fetch",
+  "parameters": {
+    "kind": "import",
+    "reason": "Need to replace javax imports with jakarta imports and remove JMS imports",
+    "match": "import javax\\.(ejb|inject|jms)\\."
+  }
+}
+```
+
+## Issue: 8-11
+```json
+{
+  "action": "fetch",
+  "parameters": {
+    "kind": "class",
+    "reason": "Need to replace @MessageDriven annotation with CDI scope annotation and modify class structure",
+    "match": "@MessageDriven\\s*\\(.*\\)\\s*public\\s+class\\s+\\w+\\s+implements\\s+MessageListener"
+  }
+}
+```
+
+## Issue: 12-15
+```json
+{
+  "action": "fetch",
+  "parameters": {
+    "kind": "method",
+    "reason": "Need to replace JavaEE/JakartaEE JMS elements with Quarkus SmallRye/Microprofile equivalents",
+    "name": "onMessage"
+  }
+}
+```

@@ -3,6 +3,7 @@ import pprint
 import re
 import shutil
 import time
+from os.path import basename
 from typing import List
 
 import tree_sitter
@@ -384,7 +385,7 @@ class Planner(object):
         pass
 
     def fetch(self) -> List[Patch]:
-        output = self.send(name="fetch", template=fetch_prompt, issues=issues)
+        output = self.send(tag="fetch", template=fetch_prompt, issues=issues)
 
         patches = []
         pattern = r"(```json)(.*?)(```)"
@@ -415,7 +416,7 @@ class Planner(object):
             part.append(p)
         patches = "\n".join(part)
         output = self.send(
-            name="patch", template=patch_prompt, issues=issues, patches=patches
+            tag="patch", template=patch_prompt, issues=issues, patches=patches
         )
 
         patches = []
@@ -452,7 +453,7 @@ class Planner(object):
                 for p in part:
                     file.write(p)
 
-    def send(self, name: str, template: str, **params) -> str:
+    def send(self, tag: str, template: str, **params) -> str:
         mark = time.time()
         prompt = PromptTemplate(template=template)
         chain = LLMChain(llm=llm, prompt=prompt)
@@ -461,9 +462,9 @@ class Planner(object):
         duration = time.time() - mark
         print(f"\n\nLLM (duration={duration:.2f}s)\n{output}\n\n")
         sent = template.format(**params)
-        with open(name + ".prompt", "w") as file:
+        with open(f"./output/{tag}.prompt", "w") as file:
             file.write(sent)
-        with open(name + ".replied", "w") as file:
+        with open(f"./output/{tag}.output", "w") as file:
             file.write(output)
         return output
 
@@ -482,8 +483,8 @@ class Planner(object):
 
 
 if __name__ == "__main__":
-    _in = "./mdb.java"
-    _out = _in + ".patched"
-    shutil.copy(_in, _out)
-    planner = Planner(path=_out)
+    input = "./input/mdb.java"
+    output = "./output/" + basename(input)
+    shutil.copy(input, output)
+    planner = Planner(path=output)
     planner.plan()
