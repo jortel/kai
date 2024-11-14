@@ -2,30 +2,33 @@ Here are the fixed code patches based on the issues provided:
 
 ```json
 {
-  "path": "./output/mdb.java",
   "begin": 39,
   "end": 352,
-  "reason": "To replace javax imports with jakarta imports and remove JavaEE/JakartaEE JMS elements",
-  "code": "import jakarta.enterprise.context.ApplicationScoped;\nimport jakarta.inject.Inject;\nimport org.eclipse.microprofile.reactive.messaging.Incoming;\n\nimport com.redhat.coolstore.model.Order;\nimport com.redhat.coolstore.utils.Transformers;"
+  "code": "import jakarta.ejb.ActivationConfigProperty;\nimport jakarta.ejb.MessageDriven;\nimport jakarta.inject.Inject;\nimport org.eclipse.microprofile.reactive.messaging.Incoming;\nimport org.eclipse.microprofile.reactive.messaging.Message;\n\nimport com.redhat.coolstore.model.Order;\nimport com.redhat.coolstore.utils.Transformers;",
+  "kind": "import",
+  "reason": "To update import statements from javax to jakarta packages and replace JMS imports with Quarkus SmallRye/Microprofile equivalents",
+  "path": "./output/mdb.java"
 }
 ```
 
 ```json
 {
-  "path": "./output/mdb.java",
   "begin": 354,
   "end": 764,
-  "reason": "To replace @MessageDriven annotation with @ApplicationScoped and add @Incoming annotation to the onMessage method",
-  "code": "@ApplicationScoped\npublic class OrderServiceMDB "
+  "code": "@ApplicationScoped\npublic class OrderServiceMDB ",
+  "kind": "class",
+  "reason": "To replace EJB annotations with CDI annotations",
+  "path": "./output/mdb.java"
 }
 ```
 
 ```json
 {
-  "path": "./output/mdb.java",
   "begin": 848,
   "end": 1541,
-  "reason": "To add @Incoming annotation to the onMessage method",
-  "code": "@Incoming(\"topic/orders\")\n\tpublic void onMessage(String orderStr) {\n\t\tSystem.out.println(\"\\nMessage received!\");\n\t\ttry {\n\t\t\tSystem.out.println(\"Received order: \" + orderStr);\n\t\t\tOrder order = Transformers.jsonToOrder(orderStr);\n\t\t\tSystem.out.println(\"Order object is \" + order);\n\t\t\torderService.save(order);\n\t\t\torder.getItemList().forEach(orderItem -> {\n\t\t\t\tcatalogService.updateInventoryItems(orderItem.getProductId(), orderItem.getQuantity());\n\t\t\t});\n\t\t} catch (Exception e) {\n\t\t\tthrow new RuntimeException(e);\n\t\t}\n\t}"
+  "code": "@Incoming(\"topic/orders\")\n\tpublic void onMessage(Message<String> message) {\n\t\tSystem.out.println(\"\\nMessage recd !\");\n\t\ttry {\n\t\t\tString orderStr = message.getPayload();\n\t\t\tSystem.out.println(\"Received order: \" + orderStr);\n\t\t\tOrder order = Transformers.jsonToOrder(orderStr);\n\t\t\tSystem.out.println(\"Order object is \" + order);\n\t\t\torderService.save(order);\n\t\t\torder.getItemList().forEach(orderItem -> {\n\t\t\t\tcatalogService.updateInventoryItems(orderItem.getProductId(), orderItem.getQuantity());\n\t\t\t});\n\t\t} catch (Exception e) {\n\t\t\tthrow new RuntimeException(e);\n\t\t}\n\t}",
+  "kind": "method",
+  "reason": "To migrate the destinationLookup property and update the message handler method",
+  "path": "./output/mdb.java"
 }
 ```

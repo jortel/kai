@@ -149,15 +149,17 @@ Example:
 
 
 class Patch(object):
-    def __init__(self, d: dict = None, begin: int = 0, end: int = 0, code: str = ""):
-        self.kind = ""
-        self.path = ""
+    kind: str = ""
+    path: str = ""
+    begin: int = 0
+    end: int = 0
+    code: str = ""
+    reason = ""
+
+    def __init__(self, begin: int = 0, end: int = 0, code: str = ""):
         self.begin = begin
         self.end = end
         self.code = code
-        self.reason = ""
-        if d:
-            self.update(d)
 
     def dict(self) -> dict:
         return self.__dict__
@@ -186,18 +188,21 @@ class Patch(object):
 
 
 class Action(object):
+    path: str = ""
+    root: Node = None
+    kind: str = ""
+    name: str = ""
+    match: str = ""
+    reason: str = ""
+
     @classmethod
     def new(cls, d: dict, path: str, root: Node) -> "Action":
         return Fetch(d["parameters"], path, root)
 
     def __init__(self, d: dict, path: str, root: Node):
+        self.__dict__.update(d)
         self.path = path
         self.root = root
-        self.kind = ""
-        self.name = ""
-        self.match = ""
-        self.reason = ""
-        self.__dict__.update(d)
 
     def __call__(self) -> Patch:
         pass
@@ -235,16 +240,19 @@ class Fetch(Action):
 
 
 class Planner(object):
+    report: Report = None
+    path: str = ""
+    root: Node = None
 
     def __init__(self, report: Report, path: str):
         self.report = report
         self.path = path
         java = tree_sitter_java.language()
-        self.language = tree_sitter.Language(java)
-        self.parser = tree_sitter.Parser(self.language)
+        language = tree_sitter.Language(java)
+        parser = tree_sitter.Parser(language)
         with open(path, "r") as file:
             content = file.read()
-        tree = self.parser.parse(bytes(content, "utf8"))
+        tree = parser.parse(bytes(content, "utf8"))
         self.root = tree.root_node
 
     def issues(self) -> str:
@@ -338,7 +346,8 @@ class Planner(object):
         for m in matched:
             document = m[1]
             d = json.loads(document)
-            patch = Patch(d=d)
+            patch = Patch()
+            patch.update(d)
             patches.append(patch)
             print(patch)
         return patches

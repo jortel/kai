@@ -6,42 +6,31 @@ Based on the provided issues and guidelines, here are the consolidated JSON acti
   "action": "fetch",
   "parameters": {
     "kind": "import",
-    "reason": "To replace javax imports with jakarta imports and remove JavaEE/JakartaEE JMS elements",
+    "reason": "To update import statements from javax to jakarta packages and replace JMS imports with Quarkus SmallRye/Microprofile equivalents",
     "match": "import\\s+(javax\\.ejb|javax\\.inject|javax\\.jms).*"
   }
 }
 ```
 
-## Issue: 8
+## Issues: 8-9
 ```json
 {
   "action": "fetch",
   "parameters": {
     "kind": "class",
-    "reason": "To replace @Stateless annotation with @ApplicationScoped",
-    "match": "@Stateless"
+    "reason": "To replace EJB annotations with CDI annotations",
+    "match": "@(Stateless|MessageDriven).*class\\s+\\w+"
   }
 }
 ```
 
-## Issues: 9-12
-```json
-{
-  "action": "fetch",
-  "parameters": {
-    "kind": "class",
-    "reason": "To replace @MessageDriven annotation with @ApplicationScoped and add @Incoming annotation to the onMessage method",
-    "match": "@MessageDriven\\s*\\(.*\\)"
-  }
-}
-```
-
+## Issues: 10-12
 ```json
 {
   "action": "fetch",
   "parameters": {
     "kind": "method",
-    "reason": "To add @Incoming annotation to the onMessage method",
+    "reason": "To migrate the destinationLookup property and update the message handler method",
     "name": "onMessage"
   }
 }
