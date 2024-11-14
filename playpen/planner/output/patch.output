@@ -5,8 +5,8 @@ Here are the fixed code patches based on the provided issues:
   "path": "./output/mdb.java",
   "begin": 39,
   "end": 352,
-  "reason": "To replace JavaEE import statements with JakartaEE equivalents and remove JMS-related imports",
-  "code": "import jakarta.enterprise.context.ApplicationScoped;\nimport jakarta.inject.Inject;\n\nimport org.eclipse.microprofile.reactive.messaging.Incoming;\nimport org.eclipse.microprofile.reactive.messaging.Message;\n\nimport com.redhat.coolstore.model.Order;\nimport com.redhat.coolstore.utils.Transformers;"
+  "reason": "To update import statements from javax to jakarta packages and replace JMS imports with Quarkus SmallRye/Microprofile equivalents",
+  "code": "import jakarta.enterprise.context.ApplicationScoped;\nimport jakarta.inject.Inject;\nimport org.eclipse.microprofile.reactive.messaging.Incoming;\nimport org.eclipse.microprofile.reactive.messaging.Message;\n\nimport com.redhat.coolstore.model.Order;\nimport com.redhat.coolstore.utils.Transformers;"
 }
 ```
 
@@ -16,6 +16,16 @@ Here are the fixed code patches based on the provided issues:
   "begin": 354,
   "end": 764,
   "reason": "To replace EJB annotations with CDI annotations",
-  "code": "@ApplicationScoped\npublic class OrderServiceMDB {\n\n    @Incoming(\"orders\")\n    public void onMessage(Message<String> message) {"
+  "code": "@ApplicationScoped\npublic class OrderServiceMDB"
+}
+```
+
+```json
+{
+  "path": "./output/mdb.java",
+  "begin": 848,
+  "end": 1541,
+  "reason": "To migrate the MessageDriven annotation and its properties to the appropriate Quarkus messaging annotations",
+  "code": "@Incoming(\"topic/orders\")\n\tpublic void onMessage(Message<String> message) {\n\t\tSystem.out.println(\"\\nMessage received!\");\n\t\ttry {\n\t\t\tString orderStr = message.getPayload();\n\t\t\tSystem.out.println(\"Received order: \" + orderStr);\n\t\t\tOrder order = Transformers.jsonToOrder(orderStr);\n\t\t\tSystem.out.println(\"Order object is \" + order);\n\t\t\torderService.save(order);\n\t\t\torder.getItemList().forEach(orderItem -> {\n\t\t\t\tcatalogService.updateInventoryItems(orderItem.getProductId(), orderItem.getQuantity());\n\t\t\t});\n\t\t} catch (Exception e) {\n\t\t\tthrow new RuntimeException(e);\n\t\t}\n\t}"
 }
 ```

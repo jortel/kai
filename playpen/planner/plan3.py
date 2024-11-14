@@ -12,7 +12,6 @@ from langchain import PromptTemplate
 from langchain.chains import LLMChain
 from langchain_aws import ChatBedrock
 from tree_sitter import Node
-from tree_sitter_languages.core import Language
 
 from kai.analyzer_types import Incident, Report
 
@@ -389,9 +388,15 @@ class Tree(object):
 
     def find(self, kind: str, name: str = "", match: str = "") -> List[Node]:
         matched = []
-        for node in self.root.children:
+
+        def find(node: Node):
             if node.type == kind:
                 matched.append(node)
+                return
+            for child in node.children:
+                find(child)
+
+        find(self.root)
         return matched
 
     def first(

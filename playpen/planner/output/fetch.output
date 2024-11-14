@@ -6,13 +6,13 @@ Based on the provided issues and guidelines, here are the consolidated JSON acti
   "action": "fetch",
   "parameters": {
     "kind": "import",
-    "reason": "To replace JavaEE import statements with JakartaEE equivalents and remove JMS-related imports",
-    "match": "import\\s+javax\\.(ejb|inject|jms)\\."
+    "reason": "To update import statements from javax to jakarta packages and replace JMS imports with Quarkus SmallRye/Microprofile equivalents",
+    "match": "import\\s+(javax\\.(ejb|inject|jms))"
   }
 }
 ```
 
-## Issues: 8-9
+## Issue: 8-9
 ```json
 {
   "action": "fetch",
@@ -30,7 +30,7 @@ Based on the provided issues and guidelines, here are the consolidated JSON acti
   "action": "fetch",
   "parameters": {
     "kind": "method",
-    "reason": "To migrate the destinationLookup property and add @Incoming annotation",
+    "reason": "To migrate the MessageDriven annotation and its properties to the appropriate Quarkus messaging annotations",
     "name": "onMessage"
   }
 }
