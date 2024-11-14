@@ -8,13 +8,13 @@ from typing import List, Tuple
 
 import tree_sitter
 import tree_sitter_java
-from tree_sitter import Node
 from langchain import PromptTemplate
 from langchain.chains import LLMChain
 from langchain_aws import ChatBedrock
+from tree_sitter import Node
 from tree_sitter_languages.core import Language
 
-from kai.analyzer_types import Report, Incident
+from kai.analyzer_types import Incident, Report
 
 pp = pprint.PrettyPrinter(indent=2)
 
@@ -194,82 +194,41 @@ class Kind(object):
 
 class Action(object):
     @classmethod
-    def new(cls, d: dict, path: str) -> "Action":
-        return Fetch(d["parameters"], path)
+    def new(cls, d: dict, path: str, root: Node) -> "Action":
+        return Fetch(d["parameters"], path, root)
 
-    def __init__(self, d: dict, path: str):
+    def __init__(self, d: dict, path: str, root: Node):
         self.path = path
+        self.root = root
         self.kind = ""
         self.name = ""
         self.match = ""
         self.reason = ""
         self.__dict__.update(d)
 
-    def __call__(self, language: Language, root) -> Patch:
+    def __call__(self) -> Patch:
         pass
 
 
 class Fetch(Action):
-    def __call__(self, language: Language, root) -> Patch:
+    def __call__(self) -> Patch:
         patch = None
         match self.kind:
             case Kind.IMPORT:
-                q = f"""
-                ((import_declaration) @constant)
-                """
-                tq = tree_sitter.Query(language, q)
-                captured = tq.captures(root)
-                begin = 0
-                end = 0
-                for capture in captured:
-                    node, name = capture
-                    if begin == 0:
-                        begin = node.start_byte
-                    end = node.end_byte
-                with open(self.path, "r") as file:
-                    file.seek(begin)
-                    content = file.read(end - begin)
-                patch = Patch(
-                    begin=begin,
-                    end=end,
-                    code=content)
+                tree = Tree(self.path, self.root)
+                found, node = tree.first("import_declaration")
+                if found:
+                    patch = tree.patch(node)
             case Kind.CLASS:
-                q = f"""
-                ((class_declaration) @constant)
-                """
-                tq = tree_sitter.Query(language, q)
-                captured = tq.captures(root)
-                for capture in captured:
-                    node, name = capture
-                    begin = node.start_byte
-                    end = node.end_byte
-                    text = node.text
-                    for child in node.children:
-                        if child.type == "class_body":
-                            end = child.start_byte
-                            break
-                    text = text[: end - begin]
-                    text = text.decode("utf-8")
-                    patch = Patch(
-                        begin=begin,
-                        end=end,
-                        code=text)
+                tree = Tree(self.path, self.root)
+                found, node = tree.first("class_declaration")
+                if found:
+                    patch = tree.patch(node)
             case Kind.METHOD:
-                q = f"""
-                ((method_declaration) @constant)
-                """
-                tq = tree_sitter.Query(language, q)
-                captured = tq.captures(root)
-                for capture in captured:
-                    node, name = capture
-                    begin = node.start_byte
-                    end = node.end_byte
-                    text = node.text
-                    text = text.decode("utf-8")
-                    patch = Patch(
-                        begin=begin,
-                        end=end,
-                        code=text)
+                tree = Tree(self.path, self.root)
+                found, node = tree.first("method_declaration")
+                if found:
+                    patch = tree.patch(node)
             case _:
                 print("kind {self.kind} not supported.")
         if patch:
@@ -308,22 +267,38 @@ class Planner(object):
                 for incident in violation.incidents:
                     yield incident
 
-    def predict(self) -> List[Patch]:
+    def send(self, tag: str, template: str, **params) -> str:
+        mark = time.time()
+        prompt = PromptTemplate(template=template)
+        chain = LLMChain(llm=llm, prompt=prompt)
+        reply = chain.invoke(params)
+        output = reply["text"]
+        duration = time.time() - mark
+        print(f"\n\nLLM (duration={duration:.2f}s)\n{output}\n\n")
+        sent = template.format(**params)
+        with open(f"./output/{tag}.prompt", "w") as file:
+            file.write(sent)
+        with open(f"./output/{tag}.output", "w") as file:
+            file.write(output)
+        return output
+
+    def predict_patches(self) -> List[Patch]:
         patches = []
         tree = Tree(self.path, self.root)
         for incident in self.incidents():
-           found, node = tree.find_at(incident.line_number)
-           if found:
-             patch = tree.patch(node)
-             if patch:
-                 patches.append(patch)
+            found, node = tree.find_at(incident.line_number)
+            if found:
+                patch = tree.patch(node)
+                if patch:
+                    patches.append(patch)
+                    print(patch)
         collated = {}
         for p in patches:
             collated[hash(p.code)] = p
         patches = list(collated.values())
         return patches
 
-    def fetch(self) -> List[Patch]:
+    def fetch_patches(self) -> List[Patch]:
         issues = self.issues()
         output = self.send(tag="fetch", template=fetch_prompt, issues=issues)
 
@@ -334,8 +309,8 @@ class Planner(object):
             document = m[1]
             d = json.loads(document)
             print(f"\n\nACTION: :\n{d}\n\n")
-            action = Action.new(d, self.path)
-            patch = action(self.language, self.root)
+            action = Action.new(d, self.path, self.root)
+            patch = action()
             if patch:
                 patch.path = self.path
                 patches.append(patch)
@@ -348,7 +323,7 @@ class Planner(object):
         patches = list(collated.values())
         return patches
 
-    def patch(self, patches: List[Patch]) -> List[Patch]:
+    def update_patches(self, patches: List[Patch]) -> List[Patch]:
         part = []
         for p in patches:
             d = p.dict()
@@ -371,7 +346,7 @@ class Planner(object):
             print(patch)
         return patches
 
-    def apply(self, patches: List[Patch]):
+    def apply_patches(self, patches: List[Patch]):
         patches = sorted(patches, reverse=True)
         for patch in patches:
             print(f"\nAPPLY: {patch}")
@@ -393,31 +368,16 @@ class Planner(object):
                 for p in part:
                     file.write(p)
 
-    def send(self, tag: str, template: str, **params) -> str:
-        mark = time.time()
-        prompt = PromptTemplate(template=template)
-        chain = LLMChain(llm=llm, prompt=prompt)
-        reply = chain.invoke(params)
-        output = reply["text"]
-        duration = time.time() - mark
-        print(f"\n\nLLM (duration={duration:.2f}s)\n{output}\n\n")
-        sent = template.format(**params)
-        with open(f"./output/{tag}.prompt", "w") as file:
-            file.write(sent)
-        with open(f"./output/{tag}.output", "w") as file:
-            file.write(output)
-        return output
-
     def plan(self):
         mark = time.time()
         print("\n*************  PREDICT PATCHES ****************")
-        patches = self.predict()
+        patches = self.predict_patches()
         print("\n*************  FETCH PATCHES ****************")
-        patches = self.fetch()
+        patches = self.fetch_patches()
         print("\n*************  FIX ISSUES IN PATCHES ****************")
-        patches = self.patch(patches)
+        patches = self.update_patches(patches)
         print("\n*************  APPLY PATCHES ****************")
-        self.apply(patches)
+        self.apply_patches(patches)
         duration = time.time() - mark
         print(f"\nDONE (duration={duration:.2f}s)\n")
 
@@ -427,21 +387,23 @@ class Tree(object):
         self.path = path
         self.root = root
 
-    def find(self, kind, name: str="", match: str="") -> List[Node]:
+    def find(self, kind: str, name: str = "", match: str = "") -> List[Node]:
         matched = []
         for node in self.root.children:
             if node.type == kind:
                 matched.append(node)
         return matched
 
-    def first(self, kind, name: str="", match: str="") -> Tuple[bool, Node|None]:
+    def first(
+        self, kind: str, name: str = "", match: str = ""
+    ) -> Tuple[bool, Node | None]:
         matched = self.find(kind, name, match)
         if len(matched) > 0:
             return True, matched[0]
         return False, None
 
-    def find_at(self, line) -> Tuple[bool, Node|None]:
-        def at(node) -> Tuple[bool, Node|None]:
+    def find_at(self, line: int) -> Tuple[bool, Node | None]:
+        def at(node) -> Tuple[bool, Node | None]:
             found = False
             row = node.start_point.row + 1
             if row != line:
@@ -452,6 +414,7 @@ class Tree(object):
             else:
                 found = True
             return found, node
+
         return at(self.root)
 
     def patch(self, node: Node) -> Patch:
@@ -467,10 +430,7 @@ class Tree(object):
                 with open(self.path, "r") as file:
                     file.seek(begin)
                     content = file.read(end - begin)
-                return Patch(
-                    begin=begin,
-                    end=end,
-                    code=content)
+                return Patch(begin=begin, end=end, code=content)
             case "class_declaration":
                 begin = node.start_byte
                 end = node.end_byte
@@ -481,19 +441,14 @@ class Tree(object):
                         break
                 text = text[: end - begin]
                 text = text.decode("utf-8")
-                return Patch(
-                    begin=begin,
-                    end=end,
-                    code=text)
+                return Patch(begin=begin, end=end, code=text)
             case "method_declaration":
                 text = node.text.decode("utf-8")
-                return Patch(
-                    begin=node.start_byte,
-                    end=node.end_byte,
-                    code=text)
+                return Patch(begin=node.start_byte, end=node.end_byte, code=text)
             case _:
                 if node.parent:
                     return self.patch(node.parent)
+
 
 if __name__ == "__main__":
     report = Report.load_report_from_file("./input/report.yaml")

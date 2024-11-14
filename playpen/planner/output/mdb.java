@@ -2,6 +2,7 @@ package com.redhat.coolstore.service;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;
 
@@ -9,7 +10,10 @@ import com.redhat.coolstore.model.Order;
 import com.redhat.coolstore.utils.Transformers;
 
 @ApplicationScoped
-public class OrderServiceMDB{
+public class OrderServiceMDB {
+
+    @Incoming("orders")
+    public void onMessage(Message<String> message) {{
 
 	@Inject
 	OrderService orderService;
@@ -17,19 +21,23 @@ public class OrderServiceMDB{
 	@Inject
 	CatalogService catalogService;
 
-	@Incoming("topic/orders")
-	public void onMessage(Message<String> message) {
-		System.out.println("\nMessage received!");
+	@Override
+	public void onMessage(Message rcvMessage) {
+		System.out.println("\nMessage recd !");
+		TextMessage msg = null;
 		try {
-			String orderStr = message.getPayload();
-			System.out.println("Received order: " + orderStr);
-			Order order = Transformers.jsonToOrder(orderStr);
-			System.out.println("Order object is " + order);
-			orderService.save(order);
-			order.getItemList().forEach(orderItem -> {
-				catalogService.updateInventoryItems(orderItem.getProductId(), orderItem.getQuantity());
-			});
-		} catch (Exception e) {
+				if (rcvMessage instanceof TextMessage) {
+						msg = (TextMessage) rcvMessage;
+						String orderStr = msg.getBody(String.class);
+						System.out.println("Received order: " + orderStr);
+						Order order = Transformers.jsonToOrder(orderStr);
+						System.out.println("Order object is " + order);
+						orderService.save(order);
+						order.getItemList().forEach(orderItem -> {
+							catalogService.updateInventoryItems(orderItem.getProductId(), orderItem.getQuantity());
+						});
+				}
+		} catch (JMSException e) {
 			throw new RuntimeException(e);
 		}
 	}

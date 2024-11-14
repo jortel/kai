@@ -6,8 +6,8 @@ Based on the provided issues and guidelines, here are the consolidated JSON acti
   "action": "fetch",
   "parameters": {
     "kind": "import",
-    "reason": "To update import statements from javax to jakarta packages and replace JMS imports with Quarkus SmallRye/Microprofile equivalents",
-    "match": "import\\s+(javax\\.ejb|javax\\.inject|javax\\.jms).*"
+    "reason": "To replace JavaEE import statements with JakartaEE equivalents and remove JMS-related imports",
+    "match": "import\\s+javax\\.(ejb|inject|jms)\\."
   }
 }
 ```
@@ -19,7 +19,7 @@ Based on the provided issues and guidelines, here are the consolidated JSON acti
   "parameters": {
     "kind": "class",
     "reason": "To replace EJB annotations with CDI annotations",
-    "match": "@(Stateless|MessageDriven).*class\\s+\\w+"
+    "match": "@(Stateless|MessageDriven)"
   }
 }
 ```
@@ -30,7 +30,7 @@ Based on the provided issues and guidelines, here are the consolidated JSON acti
   "action": "fetch",
   "parameters": {
     "kind": "method",
-    "reason": "To update the message handler method with Microprofile Reactive Messaging annotation",
+    "reason": "To migrate the destinationLookup property and add @Incoming annotation",
     "name": "onMessage"
   }
 }
