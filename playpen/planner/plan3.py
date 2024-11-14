@@ -185,12 +185,6 @@ class Patch(object):
         return self.begin == other.begin
 
 
-class Kind(object):
-    IMPORT = "import"
-    CLASS = "class"
-    METHOD = "method"
-
-
 class Action(object):
     @classmethod
     def new(cls, d: dict, path: str, root: Node) -> "Action":
@@ -210,22 +204,26 @@ class Action(object):
 
 
 class Fetch(Action):
+    IMPORT = "import"
+    CLASS = "class"
+    METHOD = "method"
+
     def __call__(self) -> Patch:
         patch = None
         match self.kind:
-            case Kind.IMPORT:
+            case Fetch.IMPORT:
                 tree = Tree(self.path, self.root)
-                found, node = tree.first("import_declaration")
+                found, node = tree.first(Tree.IMPORT)
                 if found:
                     patch = tree.patch(node)
-            case Kind.CLASS:
+            case Fetch.CLASS:
                 tree = Tree(self.path, self.root)
-                found, node = tree.first("class_declaration")
+                found, node = tree.first(tree.CLASS)
                 if found:
                     patch = tree.patch(node)
-            case Kind.METHOD:
+            case Fetch.METHOD:
                 tree = Tree(self.path, self.root)
-                found, node = tree.first("method_declaration")
+                found, node = tree.first(Tree.METHOD)
                 if found:
                     patch = tree.patch(node)
             case _:
@@ -382,6 +380,10 @@ class Planner(object):
 
 
 class Tree(object):
+    IMPORT = "import_declaration"
+    CLASS = "class_declaration"
+    METHOD = "method_declaration"
+
     def __init__(self, path: str, root: Node):
         self.path = path
         self.root = root
@@ -424,7 +426,7 @@ class Tree(object):
 
     def patch(self, node: Node) -> Patch:
         match node.type:
-            case "import_declaration":
+            case self.IMPORT:
                 matched = self.find(node.type)
                 begin = 0
                 end = 0
@@ -436,7 +438,7 @@ class Tree(object):
                     file.seek(begin)
                     content = file.read(end - begin)
                 return Patch(begin=begin, end=end, code=content)
-            case "class_declaration":
+            case self.CLASS:
                 begin = node.start_byte
                 end = node.end_byte
                 text = node.text
@@ -447,7 +449,7 @@ class Tree(object):
                 text = text[: end - begin]
                 text = text.decode("utf-8")
                 return Patch(begin=begin, end=end, code=text)
-            case "method_declaration":
+            case self.METHOD:
                 text = node.text.decode("utf-8")
                 return Patch(begin=node.start_byte, end=node.end_byte, code=text)
             case _:
