@@ -23,7 +23,7 @@ After all of the issues have been fixed, output the fixed code fragments.
   "begin": 39,
   "end": 352,
   "code": "import javax.ejb.ActivationConfigProperty;\nimport javax.ejb.MessageDriven;\nimport javax.inject.Inject;\nimport javax.jms.JMSException;\nimport javax.jms.Message;\nimport javax.jms.MessageListener;\nimport javax.jms.TextMessage;\n\nimport com.redhat.coolstore.model.Order;\nimport com.redhat.coolstore.utils.Transformers;",
-  "reason": "To update javax imports to jakarta imports and replace JMS imports with Quarkus SmallRye/Microprofile equivalents"
+  "reason": "To update import statements from javax to jakarta packages and replace JMS imports with Quarkus SmallRye/Microprofile equivalents"
 }
 ```
 ```json
@@ -33,7 +33,7 @@ After all of the issues have been fixed, output the fixed code fragments.
   "begin": 354,
   "end": 764,
   "code": "@MessageDriven(name = \"OrderServiceMDB\", activationConfig = {\n\t@ActivationConfigProperty(propertyName = \"destinationLookup\", propertyValue = \"topic/orders\"),\n\t@ActivationConfigProperty(propertyName = \"destinationType\", propertyValue = \"javax.jms.Topic\"),\n\t@ActivationConfigProperty(propertyName = \"acknowledgeMode\", propertyValue = \"Auto-acknowledge\")})\npublic class OrderServiceMDB implements MessageListener ",
-  "reason": "To replace @MessageDriven annotation with @ApplicationScoped and update the class implementation for Quarkus"
+  "reason": "To replace EJB annotations with CDI annotations"
 }
 ```
 ```json
@@ -43,99 +43,116 @@ After all of the issues have been fixed, output the fixed code fragments.
   "begin": 848,
   "end": 1541,
   "code": "@Override\n\tpublic void onMessage(Message rcvMessage) {\n\t\tSystem.out.println(\"\\nMessage recd !\");\n\t\tTextMessage msg = null;\n\t\ttry {\n\t\t\t\tif (rcvMessage instanceof TextMessage) {\n\t\t\t\t\t\tmsg = (TextMessage) rcvMessage;\n\t\t\t\t\t\tString orderStr = msg.getBody(String.class);\n\t\t\t\t\t\tSystem.out.println(\"Received order: \" + orderStr);\n\t\t\t\t\t\tOrder order = Transformers.jsonToOrder(orderStr);\n\t\t\t\t\t\tSystem.out.println(\"Order object is \" + order);\n\t\t\t\t\t\torderService.save(order);\n\t\t\t\t\t\torder.getItemList().forEach(orderItem -> {\n\t\t\t\t\t\t\tcatalogService.updateInventoryItems(orderItem.getProductId(), orderItem.getQuantity());\n\t\t\t\t\t\t});\n\t\t\t\t}\n\t\t} catch (JMSException e) {\n\t\t\tthrow new RuntimeException(e);\n\t\t}\n\t}",
-  "reason": "To add @Incoming annotation to the message handler method"
+  "reason": "To update the message handler method with Microprofile Reactive Messaging annotation"
 }
 ```
 
 ## Issues
-
 ### Issue 1
-Issue to fix: "Replace the `javax.ejb` import statement with `jakarta.ejb` "
+Issue To Fix: Replace the `javax.ejb` import statement with `jakarta.ejb`
 Line number: 3
+
 ### Issue 2
-Issue to fix: "Replace the `javax.ejb` import statement with `jakarta.ejb` "
+Issue To Fix: Replace the `javax.ejb` import statement with `jakarta.ejb`
 Line number: 4
+
 ### Issue 3
-Issue to fix: "Replace the `javax.inject` import statement with `jakarta.inject` "
+Issue To Fix: Replace the `javax.inject` import statement with `jakarta.inject`
 Line number: 5
+
 ### Issue 4
-Issue to fix: "Replace the `javax.jms` import statement with `jakarta.jms` "
+Issue To Fix: Replace the `javax.jms` import statement with `jakarta.jms`
 Line number: 6
+
 ### Issue 5
-Issue to fix: "Replace the `javax.jms` import statement with `jakarta.jms` "
+Issue To Fix: Replace the `javax.jms` import statement with `jakarta.jms`
 Line number: 7
+
 ### Issue 6
-Issue to fix: "Replace the `javax.jms` import statement with `jakarta.jms` "
+Issue To Fix: Replace the `javax.jms` import statement with `jakarta.jms`
 Line number: 8
+
 ### Issue 7
-Issue to fix: "Replace the `javax.jms` import statement with `jakarta.jms` "
+Issue To Fix: Replace the `javax.jms` import statement with `jakarta.jms`
 Line number: 9
+
 ### Issue 8
-Issue to fix: "Enterprise Java Beans (EJBs) are not supported in Quarkus. CDI must be used.
- Please replace the `@MessageDriven` annotation with a CDI scope annotation like `@ApplicationScoped`."
-Line number: 14
+Issue To Fix: Stateless EJBs can be converted to a CDI bean by replacing the `@Stateless` annotation with a scope eg `@ApplicationScoped`
+Line number: 12
+
 ### Issue 9
-Issue to fix: "The `destinationLookup` property can be migrated by annotating a message handler method (potentially `onMessage`) with the
- `org.eclipse.microprofile.reactive.messaging.Incoming` annotation, indicating the name of the queue as a value:
+Issue To Fix: Enterprise Java Beans (EJBs) are not supported in Quarkus. CDI must be used.
+ Please replace the `@MessageDriven` annotation with a CDI scope annotation like `@ApplicationScoped`.
+Line number: 14
 
- Before:
- ```
- @MessageDriven(name = "HelloWorldQueueMDB", activationConfig = 
- public class MessageListenerImpl implements MessageListener 
- }
- ```
-
- After:
- ```
- public class MessageListenerImpl implements MessageListener 
- }
- ```"
-Line number: 15
 ### Issue 10
-Issue to fix: "The `destinationLookup` property can be migrated by annotating a message handler method (potentially `onMessage`) with the
+Issue To Fix: The `destinationLookup` property can be migrated by annotating a message handler method (potentially `onMessage`) with the
  `org.eclipse.microprofile.reactive.messaging.Incoming` annotation, indicating the name of the queue as a value:
-
+ 
  Before:
  ```
  @MessageDriven(name = "HelloWorldQueueMDB", activationConfig = 
  public class MessageListenerImpl implements MessageListener 
- }
+ }}
  ```
-
+ 
  After:
  ```
  public class MessageListenerImpl implements MessageListener 
- }
- ```"
-Line number: 16
+ }}
+ ```
+Line number: 15
+
 ### Issue 11
-Issue to fix: "The `destinationLookup` property can be migrated by annotating a message handler method (potentially `onMessage`) with the
+Issue To Fix: The `destinationLookup` property can be migrated by annotating a message handler method (potentially `onMessage`) with the
  `org.eclipse.microprofile.reactive.messaging.Incoming` annotation, indicating the name of the queue as a value:
-
+ 
  Before:
  ```
  @MessageDriven(name = "HelloWorldQueueMDB", activationConfig = 
  public class MessageListenerImpl implements MessageListener 
- }
+ }}
  ```
-
+ 
  After:
  ```
  public class MessageListenerImpl implements MessageListener 
- }
- ```"
-Line number: 17
+ }}
+ ```
+Line number: 16
+
 ### Issue 12
-Issue to fix: "References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents."
-Line number: 6
+Issue To Fix: The `destinationLookup` property can be migrated by annotating a message handler method (potentially `onMessage`) with the
+ `org.eclipse.microprofile.reactive.messaging.Incoming` annotation, indicating the name of the queue as a value:
+ 
+ Before:
+ ```
+ @MessageDriven(name = "HelloWorldQueueMDB", activationConfig = 
+ public class MessageListenerImpl implements MessageListener 
+ }}
+ ```
+ 
+ After:
+ ```
+ public class MessageListenerImpl implements MessageListener 
+ }}
+ ```
+Line number: 17
+
 ### Issue 13
-Issue to fix: "References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents."
-Line number: 7
+Issue To Fix: References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents.
+Line number: 6
+
 ### Issue 14
-Issue to fix: "References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents."
-Line number: 8
+Issue To Fix: References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents.
+Line number: 7
+
 ### Issue 15
-Issue to fix: "References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents."
+Issue To Fix: References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents.
+Line number: 8
+
+### Issue 16
+Issue To Fix: References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents.
 Line number: 9
 
 
