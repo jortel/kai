@@ -117,7 +117,7 @@ Issue To Fix: The `destinationLookup` property can be migrated by annotating a m
  public class MessageListenerImpl implements MessageListener 
  }}
  ```
-Line number: 16
+Line number: 26
 
 ### Issue 12
 Issue To Fix: The `destinationLookup` property can be migrated by annotating a message handler method (potentially `onMessage`) with the
@@ -135,21 +135,39 @@ Issue To Fix: The `destinationLookup` property can be migrated by annotating a m
  public class MessageListenerImpl implements MessageListener 
  }}
  ```
-Line number: 17
+Line number: 16
 
 ### Issue 13
-Issue To Fix: References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents.
-Line number: 6
+Issue To Fix: The `destinationLookup` property can be migrated by annotating a message handler method (potentially `onMessage`) with the
+ `org.eclipse.microprofile.reactive.messaging.Incoming` annotation, indicating the name of the queue as a value:
+ 
+ Before:
+ ```
+ @MessageDriven(name = "HelloWorldQueueMDB", activationConfig = 
+ public class MessageListenerImpl implements MessageListener 
+ }}
+ ```
+ 
+ After:
+ ```
+ public class MessageListenerImpl implements MessageListener 
+ }}
+ ```
+Line number: 17
 
 ### Issue 14
 Issue To Fix: References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents.
-Line number: 7
+Line number: 6
 
 ### Issue 15
 Issue To Fix: References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents.
-Line number: 8
+Line number: 7
 
 ### Issue 16
+Issue To Fix: References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents.
+Line number: 8
+
+### Issue 17
 Issue To Fix: References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents.
 Line number: 9
 

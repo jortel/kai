@@ -42,7 +42,7 @@ After all of the issues have been fixed, output the fixed code fragments.
   "end": 1541,
   "code": "@Override\n\tpublic void onMessage(Message rcvMessage) {\n\t\tSystem.out.println(\"\\nMessage recd !\");\n\t\tTextMessage msg = null;\n\t\ttry {\n\t\t\t\tif (rcvMessage instanceof TextMessage) {\n\t\t\t\t\t\tmsg = (TextMessage) rcvMessage;\n\t\t\t\t\t\tString orderStr = msg.getBody(String.class);\n\t\t\t\t\t\tSystem.out.println(\"Received order: \" + orderStr);\n\t\t\t\t\t\tOrder order = Transformers.jsonToOrder(orderStr);\n\t\t\t\t\t\tSystem.out.println(\"Order object is \" + order);\n\t\t\t\t\t\torderService.save(order);\n\t\t\t\t\t\torder.getItemList().forEach(orderItem -> {\n\t\t\t\t\t\t\tcatalogService.updateInventoryItems(orderItem.getProductId(), orderItem.getQuantity());\n\t\t\t\t\t\t});\n\t\t\t\t}\n\t\t} catch (JMSException e) {\n\t\t\tthrow new RuntimeException(e);\n\t\t}\n\t}",
   "kind": "method",
-  "reason": "To migrate the destinationLookup property and update the message handler method",
+  "reason": "To migrate the destinationLookup property and add @Incoming annotation",
   "path": "./output/mdb.java"
 }
 ```
@@ -119,7 +119,7 @@ Issue To Fix: The `destinationLookup` property can be migrated by annotating a m
  public class MessageListenerImpl implements MessageListener 
  }}
  ```
-Line number: 16
+Line number: 26
 
 ### Issue 12
 Issue To Fix: The `destinationLookup` property can be migrated by annotating a message handler method (potentially `onMessage`) with the
@@ -137,21 +137,39 @@ Issue To Fix: The `destinationLookup` property can be migrated by annotating a m
  public class MessageListenerImpl implements MessageListener 
  }}
  ```
-Line number: 17
+Line number: 16
 
 ### Issue 13
-Issue To Fix: References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents.
-Line number: 6
+Issue To Fix: The `destinationLookup` property can be migrated by annotating a message handler method (potentially `onMessage`) with the
+ `org.eclipse.microprofile.reactive.messaging.Incoming` annotation, indicating the name of the queue as a value:
+ 
+ Before:
+ ```
+ @MessageDriven(name = "HelloWorldQueueMDB", activationConfig = 
+ public class MessageListenerImpl implements MessageListener 
+ }}
+ ```
+ 
+ After:
+ ```
+ public class MessageListenerImpl implements MessageListener 
+ }}
+ ```
+Line number: 17
 
 ### Issue 14
 Issue To Fix: References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents.
-Line number: 7
+Line number: 6
 
 ### Issue 15
 Issue To Fix: References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents.
-Line number: 8
+Line number: 7
 
 ### Issue 16
+Issue To Fix: References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents.
+Line number: 8
+
+### Issue 17
 Issue To Fix: References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents.
 Line number: 9
 

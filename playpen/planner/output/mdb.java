@@ -1,7 +1,5 @@
 package com.redhat.coolstore.service;
 
-import jakarta.ejb.ActivationConfigProperty;
-import jakarta.ejb.MessageDriven;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;
@@ -20,7 +18,7 @@ public class OrderServiceMDB {
 
 	@Incoming("topic/orders")
 	public void onMessage(Message<String> message) {
-		System.out.println("\nMessage recd !");
+		System.out.println("\nMessage received!");
 		try {
 			String orderStr = message.getPayload();
 			System.out.println("Received order: " + orderStr);

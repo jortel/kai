@@ -1,172 +1,181 @@
 - name: azure/springboot
   description: Recommend OpenFeign instead of Feign.
   violations:
-    jakarta_import:
+    jakarta_import-1000:
       incidents:
-      - uri: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
-        message: Replace the `javax.ejb` import statement with `jakarta.ejb`
-        codeSnip: " 1  package com.redhat.coolstore.service;\n 2  \n 3  import javax.ejb.ActivationConfigProperty;\n 4  import javax.ejb.MessageDriven;\n 5  import javax.inject.Inject;\n 6  import javax.jms.JMSException;\n 7  import javax.jms.Message;\n 8  import javax.jms.MessageListener;\n 9  import javax.jms.TextMessage;\n10  \n11  import com.redhat.coolstore.model.Order;\n12  import com.redhat.coolstore.utils.Transformers;\n13  "
-        lineNumber: 3
-        variables:
-          file: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
-          kind: Module
-          name: javax.ejb.ActivationConfigProperty
-          package: com.redhat.coolstore.service
-          renamed: ejb
-      - uri: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
-        message: Replace the `javax.ejb` import statement with `jakarta.ejb`
-        codeSnip: " 1  package com.redhat.coolstore.service;\n 2  \n 3  import javax.ejb.ActivationConfigProperty;\n 4  import javax.ejb.MessageDriven;\n 5  import javax.inject.Inject;\n 6  import javax.jms.JMSException;\n 7  import javax.jms.Message;\n 8  import javax.jms.MessageListener;\n 9  import javax.jms.TextMessage;\n10  \n11  import com.redhat.coolstore.model.Order;\n12  import com.redhat.coolstore.utils.Transformers;\n13  \n14  @MessageDriven(name = \"OrderServiceMDB\", activationConfig = {"
-        lineNumber: 4
-        variables:
-          file: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
-          kind: Module
-          name: javax.ejb.MessageDriven
-          package: com.redhat.coolstore.service
-          renamed: ejb
-      - uri: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
-        message: Replace the `javax.inject` import statement with `jakarta.inject`
-        codeSnip: " 1  package com.redhat.coolstore.service;\n 2  \n 3  import javax.ejb.ActivationConfigProperty;\n 4  import javax.ejb.MessageDriven;\n 5  import javax.inject.Inject;\n 6  import javax.jms.JMSException;\n 7  import javax.jms.Message;\n 8  import javax.jms.MessageListener;\n 9  import javax.jms.TextMessage;\n10  \n11  import com.redhat.coolstore.model.Order;\n12  import com.redhat.coolstore.utils.Transformers;\n13  \n14  @MessageDriven(name = \"OrderServiceMDB\", activationConfig = {\n15  \t@ActivationConfigProperty(propertyName = \"destinationLookup\", propertyValue = \"topic/orders\"),"
-        lineNumber: 5
-        variables:
-          file: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
-          kind: Module
-          name: javax.inject.Inject
-          package: com.redhat.coolstore.service
-          renamed: inject
-      - uri: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
-        message: Replace the `javax.jms` import statement with `jakarta.jms`
-        codeSnip: " 1  package com.redhat.coolstore.service;\n 2  \n 3  import javax.ejb.ActivationConfigProperty;\n 4  import javax.ejb.MessageDriven;\n 5  import javax.inject.Inject;\n 6  import javax.jms.JMSException;\n 7  import javax.jms.Message;\n 8  import javax.jms.MessageListener;\n 9  import javax.jms.TextMessage;\n10  \n11  import com.redhat.coolstore.model.Order;\n12  import com.redhat.coolstore.utils.Transformers;\n13  \n14  @MessageDriven(name = \"OrderServiceMDB\", activationConfig = {\n15  \t@ActivationConfigProperty(propertyName = \"destinationLookup\", propertyValue = \"topic/orders\"),\n16  \t@ActivationConfigProperty(propertyName = \"destinationType\", propertyValue = \"javax.jms.Topic\"),"
-        lineNumber: 6
-        variables:
-          file: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
-          kind: Module
-          name: javax.jms.JMSException
-          package: com.redhat.coolstore.service
-          renamed: jms
-      - uri: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
-        message: Replace the `javax.jms` import statement with `jakarta.jms`
-        codeSnip: " 1  package com.redhat.coolstore.service;\n 2  \n 3  import javax.ejb.ActivationConfigProperty;\n 4  import javax.ejb.MessageDriven;\n 5  import javax.inject.Inject;\n 6  import javax.jms.JMSException;\n 7  import javax.jms.Message;\n 8  import javax.jms.MessageListener;\n 9  import javax.jms.TextMessage;\n10  \n11  import com.redhat.coolstore.model.Order;\n12  import com.redhat.coolstore.utils.Transformers;\n13  \n14  @MessageDriven(name = \"OrderServiceMDB\", activationConfig = {\n15  \t@ActivationConfigProperty(propertyName = \"destinationLookup\", propertyValue = \"topic/orders\"),\n16  \t@ActivationConfigProperty(propertyName = \"destinationType\", propertyValue = \"javax.jms.Topic\"),\n17  \t@ActivationConfigProperty(propertyName = \"acknowledgeMode\", propertyValue = \"Auto-acknowledge\")})"
-        lineNumber: 7
-        variables:
-          file: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
-          kind: Module
-          name: javax.jms.Message
-          package: com.redhat.coolstore.service
-          renamed: jms
-      - uri: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
-        message: Replace the `javax.jms` import statement with `jakarta.jms`
-        codeSnip: " 1  package com.redhat.coolstore.service;\n 2  \n 3  import javax.ejb.ActivationConfigProperty;\n 4  import javax.ejb.MessageDriven;\n 5  import javax.inject.Inject;\n 6  import javax.jms.JMSException;\n 7  import javax.jms.Message;\n 8  import javax.jms.MessageListener;\n 9  import javax.jms.TextMessage;\n10  \n11  import com.redhat.coolstore.model.Order;\n12  import com.redhat.coolstore.utils.Transformers;\n13  \n14  @MessageDriven(name = \"OrderServiceMDB\", activationConfig = {\n15  \t@ActivationConfigProperty(propertyName = \"destinationLookup\", propertyValue = \"topic/orders\"),\n16  \t@ActivationConfigProperty(propertyName = \"destinationType\", propertyValue = \"javax.jms.Topic\"),\n17  \t@ActivationConfigProperty(propertyName = \"acknowledgeMode\", propertyValue = \"Auto-acknowledge\")})\n18  public class OrderServiceMDB implements MessageListener { "
-        lineNumber: 8
-        variables:
-          file: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
-          kind: Module
-          name: javax.jms.MessageListener
-          package: com.redhat.coolstore.service
-          renamed: jms
-      - uri: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
-        message: Replace the `javax.jms` import statement with `jakarta.jms`
-        codeSnip: " 1  package com.redhat.coolstore.service;\n 2  \n 3  import javax.ejb.ActivationConfigProperty;\n 4  import javax.ejb.MessageDriven;\n 5  import javax.inject.Inject;\n 6  import javax.jms.JMSException;\n 7  import javax.jms.Message;\n 8  import javax.jms.MessageListener;\n 9  import javax.jms.TextMessage;\n10  \n11  import com.redhat.coolstore.model.Order;\n12  import com.redhat.coolstore.utils.Transformers;\n13  \n14  @MessageDriven(name = \"OrderServiceMDB\", activationConfig = {\n15  \t@ActivationConfigProperty(propertyName = \"destinationLookup\", propertyValue = \"topic/orders\"),\n16  \t@ActivationConfigProperty(propertyName = \"destinationType\", propertyValue = \"javax.jms.Topic\"),\n17  \t@ActivationConfigProperty(propertyName = \"acknowledgeMode\", propertyValue = \"Auto-acknowledge\")})\n18  public class OrderServiceMDB implements MessageListener { \n19  "
-        lineNumber: 9
-        variables:
-          file: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
-          kind: Module
-          name: javax.jms.TextMessage
-          package: com.redhat.coolstore.service
-          renamed: jms
+        - uri: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
+          message: Replace the `javax.ejb` import statement with `jakarta.ejb`
+          codeSnip: " 1  package com.redhat.coolstore.service;\n 2  \n 3  import javax.ejb.ActivationConfigProperty;\n 4  import javax.ejb.MessageDriven;\n 5  import javax.inject.Inject;\n 6  import javax.jms.JMSException;\n 7  import javax.jms.Message;\n 8  import javax.jms.MessageListener;\n 9  import javax.jms.TextMessage;\n10  \n11  import com.redhat.coolstore.model.Order;\n12  import com.redhat.coolstore.utils.Transformers;\n13  "
+          lineNumber: 3
+          variables:
+            file: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
+            kind: Module
+            name: javax.ejb.ActivationConfigProperty
+            package: com.redhat.coolstore.service
+            renamed: ejb
+        - uri: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
+          message: Replace the `javax.ejb` import statement with `jakarta.ejb`
+          codeSnip: " 1  package com.redhat.coolstore.service;\n 2  \n 3  import javax.ejb.ActivationConfigProperty;\n 4  import javax.ejb.MessageDriven;\n 5  import javax.inject.Inject;\n 6  import javax.jms.JMSException;\n 7  import javax.jms.Message;\n 8  import javax.jms.MessageListener;\n 9  import javax.jms.TextMessage;\n10  \n11  import com.redhat.coolstore.model.Order;\n12  import com.redhat.coolstore.utils.Transformers;\n13  \n14  @MessageDriven(name = \"OrderServiceMDB\", activationConfig = {"
+          lineNumber: 4
+          variables:
+            file: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
+            kind: Module
+            name: javax.ejb.MessageDriven
+            package: com.redhat.coolstore.service
+            renamed: ejb
+        - uri: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
+          message: Replace the `javax.inject` import statement with `jakarta.inject`
+          codeSnip: " 1  package com.redhat.coolstore.service;\n 2  \n 3  import javax.ejb.ActivationConfigProperty;\n 4  import javax.ejb.MessageDriven;\n 5  import javax.inject.Inject;\n 6  import javax.jms.JMSException;\n 7  import javax.jms.Message;\n 8  import javax.jms.MessageListener;\n 9  import javax.jms.TextMessage;\n10  \n11  import com.redhat.coolstore.model.Order;\n12  import com.redhat.coolstore.utils.Transformers;\n13  \n14  @MessageDriven(name = \"OrderServiceMDB\", activationConfig = {\n15  \t@ActivationConfigProperty(propertyName = \"destinationLookup\", propertyValue = \"topic/orders\"),"
+          lineNumber: 5
+          variables:
+            file: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
+            kind: Module
+            name: javax.inject.Inject
+            package: com.redhat.coolstore.service
+            renamed: inject
+        - uri: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
+          message: Replace the `javax.jms` import statement with `jakarta.jms`
+          codeSnip: " 1  package com.redhat.coolstore.service;\n 2  \n 3  import javax.ejb.ActivationConfigProperty;\n 4  import javax.ejb.MessageDriven;\n 5  import javax.inject.Inject;\n 6  import javax.jms.JMSException;\n 7  import javax.jms.Message;\n 8  import javax.jms.MessageListener;\n 9  import javax.jms.TextMessage;\n10  \n11  import com.redhat.coolstore.model.Order;\n12  import com.redhat.coolstore.utils.Transformers;\n13  \n14  @MessageDriven(name = \"OrderServiceMDB\", activationConfig = {\n15  \t@ActivationConfigProperty(propertyName = \"destinationLookup\", propertyValue = \"topic/orders\"),\n16  \t@ActivationConfigProperty(propertyName = \"destinationType\", propertyValue = \"javax.jms.Topic\"),"
+          lineNumber: 6
+          variables:
+            file: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
+            kind: Module
+            name: javax.jms.JMSException
+            package: com.redhat.coolstore.service
+            renamed: jms
+        - uri: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
+          message: Replace the `javax.jms` import statement with `jakarta.jms`
+          codeSnip: " 1  package com.redhat.coolstore.service;\n 2  \n 3  import javax.ejb.ActivationConfigProperty;\n 4  import javax.ejb.MessageDriven;\n 5  import javax.inject.Inject;\n 6  import javax.jms.JMSException;\n 7  import javax.jms.Message;\n 8  import javax.jms.MessageListener;\n 9  import javax.jms.TextMessage;\n10  \n11  import com.redhat.coolstore.model.Order;\n12  import com.redhat.coolstore.utils.Transformers;\n13  \n14  @MessageDriven(name = \"OrderServiceMDB\", activationConfig = {\n15  \t@ActivationConfigProperty(propertyName = \"destinationLookup\", propertyValue = \"topic/orders\"),\n16  \t@ActivationConfigProperty(propertyName = \"destinationType\", propertyValue = \"javax.jms.Topic\"),\n17  \t@ActivationConfigProperty(propertyName = \"acknowledgeMode\", propertyValue = \"Auto-acknowledge\")})"
+          lineNumber: 7
+          variables:
+            file: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
+            kind: Module
+            name: javax.jms.Message
+            package: com.redhat.coolstore.service
+            renamed: jms
+        - uri: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
+          message: Replace the `javax.jms` import statement with `jakarta.jms`
+          codeSnip: " 1  package com.redhat.coolstore.service;\n 2  \n 3  import javax.ejb.ActivationConfigProperty;\n 4  import javax.ejb.MessageDriven;\n 5  import javax.inject.Inject;\n 6  import javax.jms.JMSException;\n 7  import javax.jms.Message;\n 8  import javax.jms.MessageListener;\n 9  import javax.jms.TextMessage;\n10  \n11  import com.redhat.coolstore.model.Order;\n12  import com.redhat.coolstore.utils.Transformers;\n13  \n14  @MessageDriven(name = \"OrderServiceMDB\", activationConfig = {\n15  \t@ActivationConfigProperty(propertyName = \"destinationLookup\", propertyValue = \"topic/orders\"),\n16  \t@ActivationConfigProperty(propertyName = \"destinationType\", propertyValue = \"javax.jms.Topic\"),\n17  \t@ActivationConfigProperty(propertyName = \"acknowledgeMode\", propertyValue = \"Auto-acknowledge\")})\n18  public class OrderServiceMDB implements MessageListener { "
+          lineNumber: 8
+          variables:
+            file: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
+            kind: Module
+            name: javax.jms.MessageListener
+            package: com.redhat.coolstore.service
+            renamed: jms
+        - uri: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
+          message: Replace the `javax.jms` import statement with `jakarta.jms`
+          codeSnip: " 1  package com.redhat.coolstore.service;\n 2  \n 3  import javax.ejb.ActivationConfigProperty;\n 4  import javax.ejb.MessageDriven;\n 5  import javax.inject.Inject;\n 6  import javax.jms.JMSException;\n 7  import javax.jms.Message;\n 8  import javax.jms.MessageListener;\n 9  import javax.jms.TextMessage;\n10  \n11  import com.redhat.coolstore.model.Order;\n12  import com.redhat.coolstore.utils.Transformers;\n13  \n14  @MessageDriven(name = \"OrderServiceMDB\", activationConfig = {\n15  \t@ActivationConfigProperty(propertyName = \"destinationLookup\", propertyValue = \"topic/orders\"),\n16  \t@ActivationConfigProperty(propertyName = \"destinationType\", propertyValue = \"javax.jms.Topic\"),\n17  \t@ActivationConfigProperty(propertyName = \"acknowledgeMode\", propertyValue = \"Auto-acknowledge\")})\n18  public class OrderServiceMDB implements MessageListener { \n19  "
+          lineNumber: 9
+          variables:
+            file: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
+            kind: Module
+            name: javax.jms.TextMessage
+            package: com.redhat.coolstore.service
+            renamed: jms
     javax-to-jakarta-properties-00001:
       incidents:
-      - uri: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderService.java
-        message: Stateless EJBs can be converted to a CDI bean by replacing the `@Stateless` annotation with a scope eg `@ApplicationScoped`
-        codeSnip: " 2  \n 3  import com.redhat.coolstore.model.Order;\n 4  import java.util.List;\n 5  import javax.ejb.Stateless;\n 6  import javax.inject.Inject;\n 7  import javax.persistence.EntityManager;\n 8  import javax.persistence.criteria.CriteriaBuilder;\n 9  import javax.persistence.criteria.CriteriaQuery;\n10  import javax.persistence.criteria.Root;\n11  \n12  @Stateless\n13  public class OrderService {\n14  \n15    @Inject\n16    private EntityManager em;\n17  \n18    public void save(Order order) {\n19      em.persist(order);\n20    }\n21  \n22    public List<Order> getOrders() {"
-        lineNumber: 12
-        variables:
-          file: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderService.java
-          kind: Class
-          name: Stateless
-          package: com.redhat.coolstore.service
+        - uri: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderService.java
+          message: Stateless EJBs can be converted to a CDI bean by replacing the `@Stateless` annotation with a scope eg `@ApplicationScoped`
+          codeSnip: " 2  \n 3  import com.redhat.coolstore.model.Order;\n 4  import java.util.List;\n 5  import javax.ejb.Stateless;\n 6  import javax.inject.Inject;\n 7  import javax.persistence.EntityManager;\n 8  import javax.persistence.criteria.CriteriaBuilder;\n 9  import javax.persistence.criteria.CriteriaQuery;\n10  import javax.persistence.criteria.Root;\n11  \n12  @Stateless\n13  public class OrderService {\n14  \n15    @Inject\n16    private EntityManager em;\n17  \n18    public void save(Order order) {\n19      em.persist(order);\n20    }\n21  \n22    public List<Order> getOrders() {"
+          lineNumber: 12
+          variables:
+            file: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderService.java
+            kind: Class
+            name: Stateless
+            package: com.redhat.coolstore.service
     jms-to-reactive-quarkus-00010:
-      description: '@MessageDriven - EJBs are not supported in Quarkus'
+      description: "@MessageDriven - EJBs are not supported in Quarkus"
       category: mandatory
       incidents:
-      - uri: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
-        message: |-
-          Enterprise Java Beans (EJBs) are not supported in Quarkus. CDI must be used.
-           Please replace the `@MessageDriven` annotation with a CDI scope annotation like `@ApplicationScoped`.
-        codeSnip: " 4  import javax.ejb.MessageDriven;\n 5  import javax.inject.Inject;\n 6  import javax.jms.JMSException;\n 7  import javax.jms.Message;\n 8  import javax.jms.MessageListener;\n 9  import javax.jms.TextMessage;\n10  \n11  import com.redhat.coolstore.model.Order;\n12  import com.redhat.coolstore.utils.Transformers;\n13  \n14  @MessageDriven(name = \"OrderServiceMDB\", activationConfig = {\n15  \t@ActivationConfigProperty(propertyName = \"destinationLookup\", propertyValue = \"topic/orders\"),\n16  \t@ActivationConfigProperty(propertyName = \"destinationType\", propertyValue = \"javax.jms.Topic\"),\n17  \t@ActivationConfigProperty(propertyName = \"acknowledgeMode\", propertyValue = \"Auto-acknowledge\")})\n18  public class OrderServiceMDB implements MessageListener { \n19  \n20  \t@Inject\n21  \tOrderService orderService;\n22  \n23  \t@Inject\n24  \tCatalogService catalogService;"
-        lineNumber: 14
-        variables:
-          file: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
-          kind: Class
-          name: MessageDriven
-          package: com.redhat.coolstore.service
+        - uri: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
+          message: |-
+            Enterprise Java Beans (EJBs) are not supported in Quarkus. CDI must be used.
+             Please replace the `@MessageDriven` annotation with a CDI scope annotation like `@ApplicationScoped`.
+          codeSnip: " 4  import javax.ejb.MessageDriven;\n 5  import javax.inject.Inject;\n 6  import javax.jms.JMSException;\n 7  import javax.jms.Message;\n 8  import javax.jms.MessageListener;\n 9  import javax.jms.TextMessage;\n10  \n11  import com.redhat.coolstore.model.Order;\n12  import com.redhat.coolstore.utils.Transformers;\n13  \n14  @MessageDriven(name = \"OrderServiceMDB\", activationConfig = {\n15  \t@ActivationConfigProperty(propertyName = \"destinationLookup\", propertyValue = \"topic/orders\"),\n16  \t@ActivationConfigProperty(propertyName = \"destinationType\", propertyValue = \"javax.jms.Topic\"),\n17  \t@ActivationConfigProperty(propertyName = \"acknowledgeMode\", propertyValue = \"Auto-acknowledge\")})\n18  public class OrderServiceMDB implements MessageListener { \n19  \n20  \t@Inject\n21  \tOrderService orderService;\n22  \n23  \t@Inject\n24  \tCatalogService catalogService;"
+          lineNumber: 14
+          variables:
+            file: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
+            kind: Class
+            name: MessageDriven
+            package: com.redhat.coolstore.service
     jms-to-reactive-quarkus-00020:
       description: Configure message listener method with @Incoming
       category: mandatory
       incidents:
-      - uri: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
-        message: "The `destinationLookup` property can be migrated by annotating a message handler method (potentially `onMessage`) with the\n `org.eclipse.microprofile.reactive.messaging.Incoming` annotation, indicating the name of the queue as a value:\n \n Before:\n ```\n @MessageDriven(name = \"HelloWorldQueueMDB\", activationConfig = \n public class MessageListenerImpl implements MessageListener \n }}\n ```\n \n After:\n ```\n public class MessageListenerImpl implements MessageListener \n }}\n ```"
-        codeSnip: " 5  import javax.inject.Inject;\n 6  import javax.jms.JMSException;\n 7  import javax.jms.Message;\n 8  import javax.jms.MessageListener;\n 9  import javax.jms.TextMessage;\n10  \n11  import com.redhat.coolstore.model.Order;\n12  import com.redhat.coolstore.utils.Transformers;\n13  \n14  @MessageDriven(name = \"OrderServiceMDB\", activationConfig = {\n15  \t@ActivationConfigProperty(propertyName = \"destinationLookup\", propertyValue = \"topic/orders\"),\n16  \t@ActivationConfigProperty(propertyName = \"destinationType\", propertyValue = \"javax.jms.Topic\"),\n17  \t@ActivationConfigProperty(propertyName = \"acknowledgeMode\", propertyValue = \"Auto-acknowledge\")})\n18  public class OrderServiceMDB implements MessageListener { \n19  \n20  \t@Inject\n21  \tOrderService orderService;\n22  \n23  \t@Inject\n24  \tCatalogService catalogService;\n25  "
-        lineNumber: 15
-        variables:
-          file: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
-          kind: Class
-          name: MessageDriven
-          package: com.redhat.coolstore.service
-      - uri: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
-        message: "The `destinationLookup` property can be migrated by annotating a message handler method (potentially `onMessage`) with the\n `org.eclipse.microprofile.reactive.messaging.Incoming` annotation, indicating the name of the queue as a value:\n \n Before:\n ```\n @MessageDriven(name = \"HelloWorldQueueMDB\", activationConfig = \n public class MessageListenerImpl implements MessageListener \n }}\n ```\n \n After:\n ```\n public class MessageListenerImpl implements MessageListener \n }}\n ```"
-        codeSnip: " 6  import javax.jms.JMSException;\n 7  import javax.jms.Message;\n 8  import javax.jms.MessageListener;\n 9  import javax.jms.TextMessage;\n10  \n11  import com.redhat.coolstore.model.Order;\n12  import com.redhat.coolstore.utils.Transformers;\n13  \n14  @MessageDriven(name = \"OrderServiceMDB\", activationConfig = {\n15  \t@ActivationConfigProperty(propertyName = \"destinationLookup\", propertyValue = \"topic/orders\"),\n16  \t@ActivationConfigProperty(propertyName = \"destinationType\", propertyValue = \"javax.jms.Topic\"),\n17  \t@ActivationConfigProperty(propertyName = \"acknowledgeMode\", propertyValue = \"Auto-acknowledge\")})\n18  public class OrderServiceMDB implements MessageListener { \n19  \n20  \t@Inject\n21  \tOrderService orderService;\n22  \n23  \t@Inject\n24  \tCatalogService catalogService;\n25  \n26  \t@Override"
-        lineNumber: 16
-        variables:
-          file: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
-          kind: Class
-          name: MessageDriven
-          package: com.redhat.coolstore.service
-      - uri: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
-        message: "The `destinationLookup` property can be migrated by annotating a message handler method (potentially `onMessage`) with the\n `org.eclipse.microprofile.reactive.messaging.Incoming` annotation, indicating the name of the queue as a value:\n \n Before:\n ```\n @MessageDriven(name = \"HelloWorldQueueMDB\", activationConfig = \n public class MessageListenerImpl implements MessageListener \n }}\n ```\n \n After:\n ```\n public class MessageListenerImpl implements MessageListener \n }}\n ```"
-        codeSnip: " 7  import javax.jms.Message;\n 8  import javax.jms.MessageListener;\n 9  import javax.jms.TextMessage;\n10  \n11  import com.redhat.coolstore.model.Order;\n12  import com.redhat.coolstore.utils.Transformers;\n13  \n14  @MessageDriven(name = \"OrderServiceMDB\", activationConfig = {\n15  \t@ActivationConfigProperty(propertyName = \"destinationLookup\", propertyValue = \"topic/orders\"),\n16  \t@ActivationConfigProperty(propertyName = \"destinationType\", propertyValue = \"javax.jms.Topic\"),\n17  \t@ActivationConfigProperty(propertyName = \"acknowledgeMode\", propertyValue = \"Auto-acknowledge\")})\n18  public class OrderServiceMDB implements MessageListener { \n19  \n20  \t@Inject\n21  \tOrderService orderService;\n22  \n23  \t@Inject\n24  \tCatalogService catalogService;\n25  \n26  \t@Override\n27  \tpublic void onMessage(Message rcvMessage) {"
-        lineNumber: 17
-        variables:
-          file: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
-          kind: Class
-          name: MessageDriven
-          package: com.redhat.coolstore.service
+        - uri: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
+          message: "The `destinationLookup` property can be migrated by annotating a message handler method (potentially `onMessage`) with the\n `org.eclipse.microprofile.reactive.messaging.Incoming` annotation, indicating the name of the queue as a value:\n \n Before:\n ```\n @MessageDriven(name = \"HelloWorldQueueMDB\", activationConfig = \n public class MessageListenerImpl implements MessageListener \n }}\n ```\n \n After:\n ```\n public class MessageListenerImpl implements MessageListener \n }}\n ```"
+          codeSnip: " 5  import javax.inject.Inject;\n 6  import javax.jms.JMSException;\n 7  import javax.jms.Message;\n 8  import javax.jms.MessageListener;\n 9  import javax.jms.TextMessage;\n10  \n11  import com.redhat.coolstore.model.Order;\n12  import com.redhat.coolstore.utils.Transformers;\n13  \n14  @MessageDriven(name = \"OrderServiceMDB\", activationConfig = {\n15  \t@ActivationConfigProperty(propertyName = \"destinationLookup\", propertyValue = \"topic/orders\"),\n16  \t@ActivationConfigProperty(propertyName = \"destinationType\", propertyValue = \"javax.jms.Topic\"),\n17  \t@ActivationConfigProperty(propertyName = \"acknowledgeMode\", propertyValue = \"Auto-acknowledge\")})\n18  public class OrderServiceMDB implements MessageListener { \n19  \n20  \t@Inject\n21  \tOrderService orderService;\n22  \n23  \t@Inject\n24  \tCatalogService catalogService;\n25  "
+          lineNumber: 15
+          variables:
+            file: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
+            kind: Class
+            name: MessageDriven
+            package: com.redhat.coolstore.service
+        - uri: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
+          message: "The `destinationLookup` property can be migrated by annotating a message handler method (potentially `onMessage`) with the\n `org.eclipse.microprofile.reactive.messaging.Incoming` annotation, indicating the name of the queue as a value:\n \n Before:\n ```\n @MessageDriven(name = \"HelloWorldQueueMDB\", activationConfig = \n public class MessageListenerImpl implements MessageListener \n }}\n ```\n \n After:\n ```\n public class MessageListenerImpl implements MessageListener \n }}\n ```"
+          codeSnip: "@Override\npublic void onMessage(Message rcvMessage)"
+          lineNumber: 26
+          variables:
+            file: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
+            kind: Class
+            name: MessageDriven
+            package: com.redhat.coolstore.service
+        - uri: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
+          message: "The `destinationLookup` property can be migrated by annotating a message handler method (potentially `onMessage`) with the\n `org.eclipse.microprofile.reactive.messaging.Incoming` annotation, indicating the name of the queue as a value:\n \n Before:\n ```\n @MessageDriven(name = \"HelloWorldQueueMDB\", activationConfig = \n public class MessageListenerImpl implements MessageListener \n }}\n ```\n \n After:\n ```\n public class MessageListenerImpl implements MessageListener \n }}\n ```"
+          codeSnip: " 6  import javax.jms.JMSException;\n 7  import javax.jms.Message;\n 8  import javax.jms.MessageListener;\n 9  import javax.jms.TextMessage;\n10  \n11  import com.redhat.coolstore.model.Order;\n12  import com.redhat.coolstore.utils.Transformers;\n13  \n14  @MessageDriven(name = \"OrderServiceMDB\", activationConfig = {\n15  \t@ActivationConfigProperty(propertyName = \"destinationLookup\", propertyValue = \"topic/orders\"),\n16  \t@ActivationConfigProperty(propertyName = \"destinationType\", propertyValue = \"javax.jms.Topic\"),\n17  \t@ActivationConfigProperty(propertyName = \"acknowledgeMode\", propertyValue = \"Auto-acknowledge\")})\n18  public class OrderServiceMDB implements MessageListener { \n19  \n20  \t@Inject\n21  \tOrderService orderService;\n22  \n23  \t@Inject\n24  \tCatalogService catalogService;\n25  \n26  \t@Override"
+          lineNumber: 16
+          variables:
+            file: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
+            kind: Class
+            name: MessageDriven
+            package: com.redhat.coolstore.service
+        - uri: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
+          message: "The `destinationLookup` property can be migrated by annotating a message handler method (potentially `onMessage`) with the\n `org.eclipse.microprofile.reactive.messaging.Incoming` annotation, indicating the name of the queue as a value:\n \n Before:\n ```\n @MessageDriven(name = \"HelloWorldQueueMDB\", activationConfig = \n public class MessageListenerImpl implements MessageListener \n }}\n ```\n \n After:\n ```\n public class MessageListenerImpl implements MessageListener \n }}\n ```"
+          codeSnip: " 7  import javax.jms.Message;\n 8  import javax.jms.MessageListener;\n 9  import javax.jms.TextMessage;\n10  \n11  import com.redhat.coolstore.model.Order;\n12  import com.redhat.coolstore.utils.Transformers;\n13  \n14  @MessageDriven(name = \"OrderServiceMDB\", activationConfig = {\n15  \t@ActivationConfigProperty(propertyName = \"destinationLookup\", propertyValue = \"topic/orders\"),\n16  \t@ActivationConfigProperty(propertyName = \"destinationType\", propertyValue = \"javax.jms.Topic\"),\n17  \t@ActivationConfigProperty(propertyName = \"acknowledgeMode\", propertyValue = \"Auto-acknowledge\")})\n18  public class OrderServiceMDB implements MessageListener { \n19  \n20  \t@Inject\n21  \tOrderService orderService;\n22  \n23  \t@Inject\n24  \tCatalogService catalogService;\n25  \n26  \t@Override\n27  \tpublic void onMessage(Message rcvMessage) {"
+          lineNumber: 17
+          variables:
+            file: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
+            kind: Class
+            name: MessageDriven
+            package: com.redhat.coolstore.service
     jms-to-reactive-quarkus-00050:
       description: JMS is not supported in Quarkus
       category: mandatory
       incidents:
-      - uri: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
-        message: References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents.
-        codeSnip: " 1  package com.redhat.coolstore.service;\n 2  \n 3  import javax.ejb.ActivationConfigProperty;\n 4  import javax.ejb.MessageDriven;\n 5  import javax.inject.Inject;\n 6  import javax.jms.JMSException;\n 7  import javax.jms.Message;\n 8  import javax.jms.MessageListener;\n 9  import javax.jms.TextMessage;\n10  \n11  import com.redhat.coolstore.model.Order;\n12  import com.redhat.coolstore.utils.Transformers;\n13  \n14  @MessageDriven(name = \"OrderServiceMDB\", activationConfig = {\n15  \t@ActivationConfigProperty(propertyName = \"destinationLookup\", propertyValue = \"topic/orders\"),\n16  \t@ActivationConfigProperty(propertyName = \"destinationType\", propertyValue = \"javax.jms.Topic\"),"
-        lineNumber: 6
-        variables:
-          file: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
-          kind: Module
-          name: javax.jms.JMSException
-          package: com.redhat.coolstore.service
-      - uri: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
-        message: References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents.
-        codeSnip: " 1  package com.redhat.coolstore.service;\n 2  \n 3  import javax.ejb.ActivationConfigProperty;\n 4  import javax.ejb.MessageDriven;\n 5  import javax.inject.Inject;\n 6  import javax.jms.JMSException;\n 7  import javax.jms.Message;\n 8  import javax.jms.MessageListener;\n 9  import javax.jms.TextMessage;\n10  \n11  import com.redhat.coolstore.model.Order;\n12  import com.redhat.coolstore.utils.Transformers;\n13  \n14  @MessageDriven(name = \"OrderServiceMDB\", activationConfig = {\n15  \t@ActivationConfigProperty(propertyName = \"destinationLookup\", propertyValue = \"topic/orders\"),\n16  \t@ActivationConfigProperty(propertyName = \"destinationType\", propertyValue = \"javax.jms.Topic\"),\n17  \t@ActivationConfigProperty(propertyName = \"acknowledgeMode\", propertyValue = \"Auto-acknowledge\")})"
-        lineNumber: 7
-        variables:
-          file: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
-          kind: Module
-          name: javax.jms.Message
-          package: com.redhat.coolstore.service
-      - uri: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
-        message: References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents.
-        codeSnip: " 1  package com.redhat.coolstore.service;\n 2  \n 3  import javax.ejb.ActivationConfigProperty;\n 4  import javax.ejb.MessageDriven;\n 5  import javax.inject.Inject;\n 6  import javax.jms.JMSException;\n 7  import javax.jms.Message;\n 8  import javax.jms.MessageListener;\n 9  import javax.jms.TextMessage;\n10  \n11  import com.redhat.coolstore.model.Order;\n12  import com.redhat.coolstore.utils.Transformers;\n13  \n14  @MessageDriven(name = \"OrderServiceMDB\", activationConfig = {\n15  \t@ActivationConfigProperty(propertyName = \"destinationLookup\", propertyValue = \"topic/orders\"),\n16  \t@ActivationConfigProperty(propertyName = \"destinationType\", propertyValue = \"javax.jms.Topic\"),\n17  \t@ActivationConfigProperty(propertyName = \"acknowledgeMode\", propertyValue = \"Auto-acknowledge\")})\n18  public class OrderServiceMDB implements MessageListener { "
-        lineNumber: 8
-        variables:
-          file: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
-          kind: Module
-          name: javax.jms.MessageListener
-          package: com.redhat.coolstore.service
-      - uri: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
-        message: References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents.
-        codeSnip: " 1  package com.redhat.coolstore.service;\n 2  \n 3  import javax.ejb.ActivationConfigProperty;\n 4  import javax.ejb.MessageDriven;\n 5  import javax.inject.Inject;\n 6  import javax.jms.JMSException;\n 7  import javax.jms.Message;\n 8  import javax.jms.MessageListener;\n 9  import javax.jms.TextMessage;\n10  \n11  import com.redhat.coolstore.model.Order;\n12  import com.redhat.coolstore.utils.Transformers;\n13  \n14  @MessageDriven(name = \"OrderServiceMDB\", activationConfig = {\n15  \t@ActivationConfigProperty(propertyName = \"destinationLookup\", propertyValue = \"topic/orders\"),\n16  \t@ActivationConfigProperty(propertyName = \"destinationType\", propertyValue = \"javax.jms.Topic\"),\n17  \t@ActivationConfigProperty(propertyName = \"acknowledgeMode\", propertyValue = \"Auto-acknowledge\")})\n18  public class OrderServiceMDB implements MessageListener { \n19  "
-        lineNumber: 9
-        variables:
-          file: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
-          kind: Module
-          name: javax.jms.TextMessage
-          package: com.redhat.coolstore.service
+        - uri: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
+          message: References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents.
+          codeSnip: " 1  package com.redhat.coolstore.service;\n 2  \n 3  import javax.ejb.ActivationConfigProperty;\n 4  import javax.ejb.MessageDriven;\n 5  import javax.inject.Inject;\n 6  import javax.jms.JMSException;\n 7  import javax.jms.Message;\n 8  import javax.jms.MessageListener;\n 9  import javax.jms.TextMessage;\n10  \n11  import com.redhat.coolstore.model.Order;\n12  import com.redhat.coolstore.utils.Transformers;\n13  \n14  @MessageDriven(name = \"OrderServiceMDB\", activationConfig = {\n15  \t@ActivationConfigProperty(propertyName = \"destinationLookup\", propertyValue = \"topic/orders\"),\n16  \t@ActivationConfigProperty(propertyName = \"destinationType\", propertyValue = \"javax.jms.Topic\"),"
+          lineNumber: 6
+          variables:
+            file: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
+            kind: Module
+            name: javax.jms.JMSException
+            package: com.redhat.coolstore.service
+        - uri: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
+          message: References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents.
+          codeSnip: " 1  package com.redhat.coolstore.service;\n 2  \n 3  import javax.ejb.ActivationConfigProperty;\n 4  import javax.ejb.MessageDriven;\n 5  import javax.inject.Inject;\n 6  import javax.jms.JMSException;\n 7  import javax.jms.Message;\n 8  import javax.jms.MessageListener;\n 9  import javax.jms.TextMessage;\n10  \n11  import com.redhat.coolstore.model.Order;\n12  import com.redhat.coolstore.utils.Transformers;\n13  \n14  @MessageDriven(name = \"OrderServiceMDB\", activationConfig = {\n15  \t@ActivationConfigProperty(propertyName = \"destinationLookup\", propertyValue = \"topic/orders\"),\n16  \t@ActivationConfigProperty(propertyName = \"destinationType\", propertyValue = \"javax.jms.Topic\"),\n17  \t@ActivationConfigProperty(propertyName = \"acknowledgeMode\", propertyValue = \"Auto-acknowledge\")})"
+          lineNumber: 7
+          variables:
+            file: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
+            kind: Module
+            name: javax.jms.Message
+            package: com.redhat.coolstore.service
+        - uri: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
+          message: References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents.
+          codeSnip: " 1  package com.redhat.coolstore.service;\n 2  \n 3  import javax.ejb.ActivationConfigProperty;\n 4  import javax.ejb.MessageDriven;\n 5  import javax.inject.Inject;\n 6  import javax.jms.JMSException;\n 7  import javax.jms.Message;\n 8  import javax.jms.MessageListener;\n 9  import javax.jms.TextMessage;\n10  \n11  import com.redhat.coolstore.model.Order;\n12  import com.redhat.coolstore.utils.Transformers;\n13  \n14  @MessageDriven(name = \"OrderServiceMDB\", activationConfig = {\n15  \t@ActivationConfigProperty(propertyName = \"destinationLookup\", propertyValue = \"topic/orders\"),\n16  \t@ActivationConfigProperty(propertyName = \"destinationType\", propertyValue = \"javax.jms.Topic\"),\n17  \t@ActivationConfigProperty(propertyName = \"acknowledgeMode\", propertyValue = \"Auto-acknowledge\")})\n18  public class OrderServiceMDB implements MessageListener { "
+          lineNumber: 8
+          variables:
+            file: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
+            kind: Module
+            name: javax.jms.MessageListener
+            package: com.redhat.coolstore.service
+        - uri: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
+          message: References to JavaEE/JakartaEE JMS elements should be removed and replaced with their Quarkus SmallRye/Microprofile equivalents.
+          codeSnip: " 1  package com.redhat.coolstore.service;\n 2  \n 3  import javax.ejb.ActivationConfigProperty;\n 4  import javax.ejb.MessageDriven;\n 5  import javax.inject.Inject;\n 6  import javax.jms.JMSException;\n 7  import javax.jms.Message;\n 8  import javax.jms.MessageListener;\n 9  import javax.jms.TextMessage;\n10  \n11  import com.redhat.coolstore.model.Order;\n12  import com.redhat.coolstore.utils.Transformers;\n13  \n14  @MessageDriven(name = \"OrderServiceMDB\", activationConfig = {\n15  \t@ActivationConfigProperty(propertyName = \"destinationLookup\", propertyValue = \"topic/orders\"),\n16  \t@ActivationConfigProperty(propertyName = \"destinationType\", propertyValue = \"javax.jms.Topic\"),\n17  \t@ActivationConfigProperty(propertyName = \"acknowledgeMode\", propertyValue = \"Auto-acknowledge\")})\n18  public class OrderServiceMDB implements MessageListener { \n19  "
+          lineNumber: 9
+          variables:
+            file: file:///opt/input/source/src/main/java/com/redhat/coolstore/service/OrderServiceMDB.java
+            kind: Module
+            name: javax.jms.TextMessage
+            package: com.redhat.coolstore.service

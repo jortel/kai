@@ -1,13 +1,13 @@
-Based on the provided issues and guidelines, here are the consolidated JSON actions for fetching the relevant code fragments:
+Based on the provided issues and guidelines, I'll generate the consolidated JSON actions for fetching the relevant code fragments needed to fix the issues.
 
-## Issues: 1-7, 13-16
+## Issues: 1-7, 14-17
 ```json
 {
   "action": "fetch",
   "parameters": {
     "kind": "import",
     "reason": "To update import statements from javax to jakarta packages and replace JMS imports with Quarkus SmallRye/Microprofile equivalents",
-    "match": "import\\s+(javax\\.ejb|javax\\.inject|javax\\.jms).*"
+    "match": "import\\s+javax\\.(ejb|inject|jms)\\."
   }
 }
 ```
@@ -19,19 +19,20 @@ Based on the provided issues and guidelines, here are the consolidated JSON acti
   "parameters": {
     "kind": "class",
     "reason": "To replace EJB annotations with CDI annotations",
-    "match": "@(Stateless|MessageDriven).*class\\s+\\w+"
+    "match": "@(Stateless|MessageDriven)"
   }
 }
 ```
 
-## Issues: 10-12
+## Issues: 10-13
 ```json
 {
   "action": "fetch",
   "parameters": {
     "kind": "method",
-    "reason": "To migrate the destinationLookup property and update the message handler method",
-    "name": "onMessage"
+    "reason": "To migrate the destinationLookup property and add @Incoming annotation",
+    "name": "onMessage",
+    "match": "@MessageDriven\\s*\\([^)]*\\)\\s*public\\s+class\\s+\\w+\\s+implements\\s+MessageListener"
   }
 }
 ```

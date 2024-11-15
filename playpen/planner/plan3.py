@@ -296,11 +296,11 @@ class Planner(object):
                 patch = tree.patch(node)
                 if patch:
                     patches.append(patch)
-                    print(patch)
         collated = {}
         for p in patches:
             collated[hash(p.code)] = p
         patches = list(collated.values())
+        pp.pprint(patches)
         return patches
 
     def fetch_patches(self) -> List[Patch]:
@@ -319,13 +319,13 @@ class Planner(object):
             if patch:
                 patch.path = self.path
                 patches.append(patch)
-                print(patch)
             else:
                 pass
         collated = {}
         for p in patches:
             collated[hash(p.code)] = p
         patches = list(collated.values())
+        pp.pprint(patches)
         return patches
 
     def update_patches(self, patches: List[Patch]) -> List[Patch]:
@@ -349,7 +349,7 @@ class Planner(object):
             patch = Patch()
             patch.update(d)
             patches.append(patch)
-            print(patch)
+        pp.pprint(patches)
         return patches
 
     def apply_patches(self, patches: List[Patch]):
