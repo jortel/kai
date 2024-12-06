@@ -36,16 +36,14 @@ class Patch(object):
         self.__dict__.update(d)
 
     def __repr__(self):
-        parts = (
-            f"\n\nPatch({self.kind}):",
-            f"path: {self.path}",
-            f"reason: {self.reason}",
-            f"begin: {self.begin}",
-            f"end: {self.end}",
-            f"code:\n{self.code}\n",
+        return (
+            f"\n\nPatch({self.kind}):\n"
+            f"path: {self.path}\n"
+            f"reason: {self.reason}\n"
+            f"begin: {self.begin}\n"
+            f"end: {self.end}\n"
+            f"code:\n{self.code}\n"
         )
-        s = "\n".join(parts)
-        return s
 
     def __str__(self):
         return repr(self)
