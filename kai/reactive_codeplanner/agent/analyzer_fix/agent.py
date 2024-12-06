@@ -119,6 +119,7 @@ If you have any additional details or steps that need to be performed, put it he
 
         language = guess_language(ask.file_content, file_name)
 
+        patched = ""
         if ask.file_path.suffix == ".java":
             request = PatchRequest(
                 provider=self._model_provider,
@@ -127,6 +128,7 @@ If you have any additional details or steps that need to be performed, put it he
                 incidents=ask.incidents,
             )
             request()
+            patched = request.content
 
         content = self.chat_message_template.render(
             src_file_contents=ask.file_content,

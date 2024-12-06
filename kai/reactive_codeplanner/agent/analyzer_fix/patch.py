@@ -8,7 +8,6 @@ import tree_sitter
 import tree_sitter_java
 from jinja2 import Template
 from langchain_core.messages import HumanMessage, SystemMessage
-from mypy.meet import narrow_declared_type
 from tree_sitter import Node
 
 from kai.analyzer_types import Incident
@@ -82,13 +81,14 @@ class Filter(object):
         if self.pattern == "":
             return True
         text = node.text.decode("utf-8")
-        match = re.match(self.pattern, text, re.DOTALL)
+        match = re.search(self.pattern, text, re.DOTALL)
         return match is not None
 
 
 class Tree(object):
     IMPORT = "import_declaration"
     CLASS = "class_declaration"
+    FIELD = "field_declaration"
     METHOD = "method_declaration"
 
     def __init__(self, path: str, content: str, root: Node):
@@ -153,7 +153,7 @@ class Tree(object):
                 text = text[: end - begin]
                 text = text.decode("utf-8")
                 return Patch(begin=begin, end=end, code=text)
-            case self.METHOD:
+            case self.METHOD | self.FIELD:
                 text = node.text.decode("utf-8")
                 return Patch(begin=node.start_byte, end=node.end_byte, code=text)
             case _:
@@ -183,6 +183,7 @@ class Action(object):
 class Fetch(Action):
     IMPORT = "import"
     CLASS = "class"
+    FIELD = "field"
     METHOD = "method"
 
     @override
@@ -196,6 +197,11 @@ class Fetch(Action):
                     patch = self.tree.patch(node)
             case Fetch.CLASS:
                 filter = Filter(kind=Tree.CLASS, name=self.name, pattern=self.match)
+                found, node = self.tree.first(filter)
+                if found:
+                    patch = self.tree.patch(node)
+            case Fetch.FIELD:
+                filter = Filter(kind=Tree.FIELD, name=self.name, pattern=self.match)
                 found, node = self.tree.first(filter)
                 if found:
                     patch = self.tree.patch(node)
@@ -244,6 +250,10 @@ For each issue, you will generate json to fetch relevant code fragments needed t
    - parameters
    - returned type
    - exceptions raised
+4 Field `declaration` - Field/Attribute declaration.  Includes:
+   - annotations
+   - type
+   - name
 
 ## Actions:
 1. fetch: fetch a code snip for the code construct kind.
@@ -252,6 +262,7 @@ For each issue, you will generate json to fetch relevant code fragments needed t
      - import -  The import statements (block).
      - class   - The class declaration. This includes annotations but no body.
      - method -  The method declaration. This includes annotations, signature and body.
+     - field - The field declaration. This includes annotations.
      reason (string): The rationale for the fetching the code.
      name (string): The optional name of the named kinds such as classes and methods.
      match (string): The optional matching criteria. This is a regex used to match.
