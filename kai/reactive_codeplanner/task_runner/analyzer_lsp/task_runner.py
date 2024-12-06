@@ -50,7 +50,8 @@ class AnalyzerTaskRunner(TaskRunner):
         if not isinstance(task, AnalyzerRuleViolation):
             return TaskResult(encountered_errors=[], modified_files=[])
 
-        with open(task.file) as f:
+        p = task.file[1:]
+        with open(p) as f:
             src_file_contents = f.read()
 
         logger.info(f"file -- {task.file}")

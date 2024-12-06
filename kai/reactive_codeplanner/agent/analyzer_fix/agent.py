@@ -15,6 +15,7 @@ from kai.reactive_codeplanner.agent.analyzer_fix.api import (
     AnalyzerFixRequest,
     AnalyzerFixResponse,
 )
+from kai.reactive_codeplanner.agent.analyzer_fix.patch import PatchRequest
 from kai.reactive_codeplanner.agent.api import Agent, AgentRequest
 
 logger = get_logger(__name__)
@@ -117,6 +118,15 @@ If you have any additional details or steps that need to be performed, put it he
         file_name = os.path.basename(ask.file_path)
 
         language = guess_language(ask.file_content, file_name)
+
+        if ask.file_path.suffix == ".java":
+            request = PatchRequest(
+                provider=self._model_provider,
+                path=str(ask.file_path),
+                content=ask.file_content,
+                incidents=ask.incidents,
+            )
+            request()
 
         content = self.chat_message_template.render(
             src_file_contents=ask.file_content,
