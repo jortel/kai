@@ -140,7 +140,7 @@ class Tree(object):
                     if begin == 0:
                         begin = node.start_byte
                     end = node.end_byte
-                content = self.content[end:begin]
+                content = self.content[begin:end]
                 return Patch(begin=begin, end=end, code=content)
             case self.CLASS:
                 begin = node.start_byte
