@@ -281,30 +281,41 @@ For each issue, you will generate json to fetch relevant code fragments needed t
 ## Output
 A json block for each action grouped by issue.
 Ensure json block has markdown syntax highlighting.
+Each json block must contain a single action json object.
 Example:
 ## Issue: 1-4
 ```json
-  {
-    "action": "fetch",
-    "parameters": {
-      "kind": "import",
-      "reason": "The reason explained.",
-      "match": "Regex here."
-    }
+{
+  "action": "fetch",
+  "parameters": {
+    "kind": "import",
+    "reason": "The reason explained.",
+     "match": "Regex here."
   }
-  ```
-  ## Issue: 4,5
-  ```json
-  {
-    "action": "fetch",
-    "parameters": {
-      "kind": "import",
-      "reason": "The reason explained.",
-      "match": "Regex here."
-    }
+}
+```
+```json
+{
+  "action": "fetch",
+  "parameters": {
+    "kind": "class",
+    "reason": "The reason explained.",
+     "match": "Regex here."
   }
-  ```
-    """
+}
+```
+## Issue: 4,5
+```json
+{
+  "action": "fetch",
+  "parameters": {
+  "kind": "import",
+    "reason": "The reason explained.",
+    "match": "Regex here."
+  }
+}
+```
+"""
 
     fetch_human_prompt = """
 ## Issues
@@ -324,17 +335,19 @@ Each `Patch` object has the schema:
 {
   "path": "/path/to/file",
   "begin": 12,
-  "end": 200,
-  "reason": Replace @jeff annotation to fix issues 1, 2."
+  "end": 20,
+  "reason": Replace @dog annotation to fix issues 1, 2."
   "code": "The code needs to be fixed."
 }
 ```
+
 You will fix the issues in the provided code patches.
 After all of the issues have been fixed, output the fixed code fragments.
 
 ## Output
 Return json object for each patch.
 Ensure json has markdown syntax highlighting.
+Each json block must contain a single action json object.
 Be sure to copy the input patch begin, end and reason fields
 to the output objects.
 Example:
@@ -346,6 +359,7 @@ Example:
   "reason": Replace @jeff annotation to fix issues 1, 2."
   "code": "Fixed code."
 }
+```
 ```json
 {
   "path": "/path/to/file",
@@ -354,7 +368,8 @@ Example:
   "reason": Replace @This annotation to fix issues 3, 4."
   "code": "Fixed code."
 }
-    """
+```
+"""
 
     patch_human_prompt = """
 ## Patches (to be fixed):
@@ -454,15 +469,16 @@ Line number: {{ incident.line_number }}
     def apply_patches(self, patches: List[Patch]):
         patches = sorted(patches, reverse=True)
         for patch in patches:
+            code = self.content[patch.begin : patch.end]
             print(f"\nAPPLY: {patch}")
-            print(f"\nREPLACE: >>>{self.content}<<<")
+            print(f"\nREPLACE: >>>{code}<<<")
             patched = (
                 self.content[: patch.begin] + patch.code + self.content[patch.end :]
             )
             self.content = patched
-            print(f"\nREPLACED: >>>{self.content}<<<")
+            print(f"\nREPLACED WITH: >>>{patch.code}<<<")
 
-    def __call__(self):
+    def __call__(self) -> int:
         mark = time.time()
         print("\n*************  PREDICT PATCHES ****************")
         patches = self.predict_patches()
@@ -474,3 +490,4 @@ Line number: {{ incident.line_number }}
         self.apply_patches(patches)
         duration = time.time() - mark
         print(f"\nDONE (duration={duration:.2f}s)\n")
+        return len(patches)

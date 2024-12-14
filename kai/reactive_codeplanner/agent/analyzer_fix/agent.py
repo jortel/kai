@@ -1,3 +1,4 @@
+import json
 import os
 from dataclasses import dataclass
 from pathlib import Path
@@ -119,17 +120,6 @@ If you have any additional details or steps that need to be performed, put it he
 
         language = guess_language(ask.file_content, file_name)
 
-        patched = ""
-        if ask.file_path.suffix == ".java":
-            request = PatchRequest(
-                provider=self._model_provider,
-                path=str(ask.file_path),
-                content=ask.file_content,
-                incidents=ask.incidents,
-            )
-            request()
-            patched = request.content
-
         content = self.chat_message_template.render(
             src_file_contents=ask.file_content,
             src_file_name=file_name,
@@ -142,13 +132,42 @@ If you have any additional details or steps that need to be performed, put it he
         )
 
         resp = self.parse_llm_response(aimessage)
-        return AnalyzerFixResponse(
+        response = AnalyzerFixResponse(
             encountered_errors=[],
             file_to_modify=Path(os.path.abspath(ask.file_path)),
             reasoning=resp.reasoning,
             additional_information=resp.addional_information,
             updated_file_content=resp.java_file,
         )
+
+        # Patch and report.
+        try:
+            if ask.file_path.suffix == ".java":
+                request = PatchRequest(
+                    provider=self._model_provider,
+                    path=str(ask.file_path),
+                    content=ask.file_content,
+                    incidents=ask.incidents,
+                )
+                _id = id(ask)
+                n_patch = request()
+                project, ext = os.path.splitext(ask.file_path)
+                root = f"/tmp/kai{project}/{_id}"
+                os.makedirs(name=root, exist_ok=True)
+                with open(f"{root}/incidents.json", "w") as f:
+                    f.write(repr(ask.incidents))
+                with open(f"{root}/input{ext}", "w") as f:
+                    f.write(ask.file_content)
+                with open(f"{root}/replaced{ext}", "w") as f:
+                    f.write(response.updated_file_content)
+                if n_patch:
+                    with open(f"{root}/patched{ext}", "w") as f:
+                        f.write(request.content)
+        except Exception as e:
+            logger.exception(ask.file_path)
+            pass
+
+        return response
 
     def parse_llm_response(self, message: BaseMessage) -> _llm_response:
         """Private method that will be used to parse the contents and get the results"""
